@@ -1,5 +1,9 @@
 # Simulated functions written as generators to closer replicate the description in Verilog
 
+__requires__ = "numpy==1.24"  # For numba
+import pkg_resources
+pkg_resources.require(__requires__)
+
 import numpy as np
 from numba import njit, typed
 

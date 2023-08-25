@@ -6,7 +6,7 @@ def plot_inv_frac(df, delay_samples=DELAY_SAMPLES, title="untitled"):
     df = df[df.delay_samples == delay_samples]
 
     fig, (ax1_1, ax2) = plt.subplots(1, 2)
-    # fig.suptitle(title)
+    fig.suptitle(title)
     fig.set_figwidth(12)
     fig.set_figheight(4)
 
@@ -37,8 +37,8 @@ def plot_inv_frac(df, delay_samples=DELAY_SAMPLES, title="untitled"):
 
     fig.tight_layout()  # Otherwise the right y-label is slightly clipped (for axis1)
     plt.show()
-    # plt.close()
 
+    return fig
 
 def plot_all_3d(df, title="untitled"):
     fig, (ax1, ax2) = plt.subplots(1, 2,
@@ -66,4 +66,5 @@ def plot_all_3d(df, title="untitled"):
     ax2.set_zlim([0, 1])
     ax2.plot_trisurf(x, y, df.misfire_rate, cmap=cmap, linewidth=0.2)
     plt.show()
-    # plt.close()
+
+    return fig
