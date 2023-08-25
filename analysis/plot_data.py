@@ -1,6 +1,8 @@
 import matplotlib.pyplot as plt
+from default_constants import DELAY_SAMPLES
 
-def plot_inv_frac(df, delay_samples=100):
+
+def plot_inv_frac(df, delay_samples=DELAY_SAMPLES):
     df = df[df.delay_samples == delay_samples]
 
     fig, (ax1_1, ax2) = plt.subplots(1, 2)

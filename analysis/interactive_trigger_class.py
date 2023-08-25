@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 from default_constants import *
 from signal_data_class import SignalData
 
+
 class InteractiveTrigger(SignalData):
     def __init__(self,
                  data,
@@ -31,8 +32,11 @@ class InteractiveTrigger(SignalData):
                                          zorder=3)
 
     def update(self, delay_samples=None, inv_frac=None):
-        if delay_samples is not None: self.delay_samples = delay_samples
-        if inv_frac is not None: self.inv_frac = inv_frac
+        # if delay_samples is not None: self.delay_samples = delay_samples
+        # if inv_frac is not None: self.inv_frac = inv_frac
+        # Only update if not none:
+        self.delay_samples = delay_samples or self.delay_samples
+        self.inv_frac = inv_frac or self.inv_frac
 
         self.run_cfd()
         self.run_zd()
