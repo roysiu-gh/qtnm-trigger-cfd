@@ -1,0 +1,1 @@
+# qtnm-trigger-cfd
