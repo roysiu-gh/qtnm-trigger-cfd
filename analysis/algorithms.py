@@ -1,11 +1,12 @@
 # Simulated functions written as generators to closer replicate the description in Verilog
 
-__requires__ = "numpy==1.24"  # For numba
-import pkg_resources
-pkg_resources.require(__requires__)
-
 import numpy as np
 from numba import njit, typed
+
+import pkg_resources
+__requires__ = "numpy==1.24"  # For numba
+pkg_resources.require(__requires__)
+
 
 @njit
 # @make_typed
@@ -24,6 +25,7 @@ def LP_filt(x_all, DECAY_FULL_POWER=10, DECAY_PART=900):
         y = y >> DECAY_FULL_POWER  # Arithmetic shift to divide by DECAY_FULL
         last_y = y
         yield y
+
 
 @njit
 # @make_typed
@@ -48,6 +50,7 @@ def CFD(x_all, inv_frac=3, delay_samples=100):
         y = x + working
         yield y
 
+
 @njit
 # @make_typed
 def zero_detector(x_all):
@@ -60,6 +63,7 @@ def zero_detector(x_all):
         y = sign ^ last_sign
         yield y
 
+
 @njit
 # @make_typed
 def zero_detector2(x_all):
@@ -69,15 +73,15 @@ def zero_detector2(x_all):
     sign = 0
     for x in x_all:  # Simulate `always @ (posedge clk)`
         last_sign = sign
-        sign = 0 if x >= 0 else 1  # In Verilog would be a continuous assignment `assign y = ???` declared at the beginning
+        # In Verilog would be a continuous assignment `assign y = ???` declared at the beginning
+        sign = 0 if x >= 0 else 1
         y = sign & ~last_sign  # NB using two's complement, so need -ve & +ve i.e. 1 & 0
         yield y
-
 
 
 def make_typed(inner):
     """Wrapper to change first arg `x_all` to a numba.typed.List for speedup and avoid deprecation warning"""
     def outer(*args, **kwargs):
-        args[0] = typed.List(args[0])
-        inner(*args, **kwargs)
-    return outer(*args, **kwargs)
+        x_all_typed = typed.List(args[0])
+        return inner(x_all_typed, *args[1:], **kwargs)
+    return outer

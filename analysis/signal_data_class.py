@@ -1,6 +1,7 @@
 from default_constants import *
 from algorithms import *
 
+
 class SignalData(object):
     def __init__(self,
                  data,
@@ -25,9 +26,7 @@ class SignalData(object):
 
         if truth_data is not None:
             if len(data[0]) != len(truth_data):
-                # raise IndexError(f"data[0] and truth_data length mismatch: { len(data[0]) } and { len(truth_data) }")
-                print("NOPE")
-                return None
+                raise IndexError(f"data[0] and truth_data length mismatch: { len(data[0]) } and { len(truth_data) }")
             self.all_truth_data = truth_data
         else:
             self.all_truth_data = np.zeros_like(self.all_t)
@@ -212,4 +211,3 @@ class SignalData(object):
     #     # POOL.join()
     #     if verbose: print("computation completed")
     #     return self.all_computed_performances
-

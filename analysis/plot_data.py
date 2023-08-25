@@ -40,6 +40,7 @@ def plot_inv_frac(df, delay_samples=DELAY_SAMPLES, title="untitled"):
 
     return fig
 
+
 def plot_all_3d(df, title="untitled"):
     fig, (ax1, ax2) = plt.subplots(1, 2,
                                    subplot_kw={"projection": "3d"},

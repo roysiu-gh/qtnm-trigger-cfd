@@ -16,10 +16,10 @@ class InteractiveTrigger(SignalData):
                  ):
         super().__init__(
             data=data,
-            slice_start=SLICE_START,
-            slice_end=SLICE_END,
-            delay_samples=DELAY_SAMPLES,
-            inv_frac=INV_FRAC,
+            slice_start=slice_start,
+            slice_end=slice_end,
+            delay_samples=delay_samples,
+            inv_frac=inv_frac,
             *args,
             **kwargs,
         )
