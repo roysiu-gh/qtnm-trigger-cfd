@@ -184,30 +184,13 @@ class SignalData(object):
         if verbose: print("computation completed")
         return all_performances
 
-    # @jit
-    # def get_performance_jit(self, inv_frac_vals, delay_samples_vals, tolerance=100e-6, verbose=False):
-    #     all_performances = []
-    #     for delay_samples in delay_samples_vals:
-    #         self.delay_samples = delay_samples
-    #         if verbose: print("." * len(inv_frac_vals) + f" {delay_samples}")
-    #         for inv_frac in inv_frac_vals:
-    #             self.inv_frac = inv_frac
-    #             # Only run CFD and ZD, where self.regenerate() would also fun the amplifier and filter
-    #             self.run_cfd()
-    #             self.run_zd()
-    #             all_performances.append(self.get_inv_frac_performance(tolerance=tolerance))
-    #             if verbose: print(".", end="")
-    #         if verbose: print()
-    #     if verbose: print("computation completed")
-    #     return all_performances
-
-    def foobuh(self, delay_samples, inv_frac, tolerance):
-        cfd_done = self.cfd(self.sig_fil, delay_samples=delay_samples, inv_frac=inv_frac)
-        sig_cfd = np.array(list(cfd_done))
-        zd_done = self.zd(sig_cfd)
-        output = np.array(list(zd_done))
-        print(".")
-        return self.get_inv_frac_performance(tolerance=tolerance, output_to_analyse=output)
+    # def foobuh(self, delay_samples, inv_frac, tolerance):
+    #     cfd_done = self.cfd(self.sig_fil, delay_samples=delay_samples, inv_frac=inv_frac)
+    #     sig_cfd = np.array(list(cfd_done))
+    #     zd_done = self.zd(sig_cfd)
+    #     output = np.array(list(zd_done))
+    #     print(".")
+    #     return self.get_inv_frac_performance(tolerance=tolerance, output_to_analyse=output)
 
     # def get_performance_parallel(self, inv_frac_vals, delay_samples_vals, tolerance=100e-6, verbose=False):
     #     collect_result = lambda results: self.all_computed_performances.append(results)

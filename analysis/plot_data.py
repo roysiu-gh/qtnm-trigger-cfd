@@ -2,16 +2,17 @@ import matplotlib.pyplot as plt
 from default_constants import DELAY_SAMPLES
 
 
-def plot_inv_frac(df, delay_samples=DELAY_SAMPLES):
+def plot_inv_frac(df, delay_samples=DELAY_SAMPLES, title="untitled"):
     df = df[df.delay_samples == delay_samples]
 
     fig, (ax1_1, ax2) = plt.subplots(1, 2)
+    # fig.suptitle(title)
     fig.set_figwidth(12)
     fig.set_figheight(4)
 
     # Initial plot
 
-    ax1_1.set_title(f"SX1 analysis, delay_samples={delay_samples}")
+    ax1_1.set_title(f"delay_samples={delay_samples}")
     ax1_1.set_xlabel("inv_frac")
     color = "tab:green"
     ax1_1.set_ylabel("Hitrate", color=color)
@@ -26,7 +27,7 @@ def plot_inv_frac(df, delay_samples=DELAY_SAMPLES):
 
     # Get and plot misfire rates and performances
 
-    ax2.set_title(f"SX1 analysis, delay_samples={delay_samples}")
+    ax2.set_title(f"delay_samples={delay_samples}")
     ax2.set_xlabel("inv_frac")
     ax2.set_ylim([0, 1.05])
     ax2.plot(df.inv_frac, df.hitrate, label="Hitrate", color="tab:green", linestyle="dotted")
@@ -36,6 +37,7 @@ def plot_inv_frac(df, delay_samples=DELAY_SAMPLES):
 
     fig.tight_layout()  # Otherwise the right y-label is slightly clipped (for axis1)
     plt.show()
+    # plt.close()
 
 
 def plot_all_3d(df, title="untitled"):
@@ -64,3 +66,4 @@ def plot_all_3d(df, title="untitled"):
     ax2.set_zlim([0, 1])
     ax2.plot_trisurf(x, y, df.misfire_rate, cmap=cmap, linewidth=0.2)
     plt.show()
+    # plt.close()
