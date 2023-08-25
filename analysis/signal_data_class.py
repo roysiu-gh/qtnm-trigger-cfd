@@ -7,8 +7,8 @@ class SignalData(object):
                  data,
                  truth_data=None,
 
-                 filter_alg=LP_filt,
-                 cfd_alg=CFD,
+                 filter_alg=lp_filter,
+                 cfd_alg=cfd,
                  zero_detector_alg=zero_detector,
 
                  slice_start=0,

@@ -1,16 +1,25 @@
 # Simulated functions written as generators to closer replicate the description in Verilog
 
 import numpy as np
-from numba import njit, typed
+from numba import jit, typed
 
 import pkg_resources
 __requires__ = "numpy==1.24"  # For numba
 pkg_resources.require(__requires__)
 
 
-@njit
+def make_typed(inner):
+    """Wrapper to change first arg `x_all` to a numba.typed.List for speedup and avoid deprecation warning"""
+    def outer(*args, **kwargs):
+        x_all_typed = typed.List(args[0])
+        return inner(x_all_typed, *args[1:], **kwargs)
+        # return inner(*args, **kwargs)
+    return outer
+
+
+@jit(nopython=True, parallel=True)
 # @make_typed
-def LP_filt(x_all, DECAY_FULL_POWER=10, DECAY_PART=900):
+def lp_filter(x_all, DECAY_FULL_POWER=10, DECAY_PART=900):
     """ Low-pass IIR filter simulation of Verilog implementation
     Write as a generator to simulate verilog functionality
     Default DECAY_FULL_POWER = 10 so that DECAY_FULL = 1024
@@ -27,9 +36,9 @@ def LP_filt(x_all, DECAY_FULL_POWER=10, DECAY_PART=900):
         yield y
 
 
-@njit
+@jit(nopython=True, parallel=True)
 # @make_typed
-def CFD(x_all, inv_frac=3, delay_samples=100):
+def cfd(x_all, inv_frac=3, delay_samples=100):
     """Simulation of the constant fraction discriminator (CFD) described in Verilog.
     As normally described, the parameters are `fraction` and `delay`.
     The parameter `inv_frac` is `1/fraction`, so can multiply the conjugate variable
@@ -51,7 +60,7 @@ def CFD(x_all, inv_frac=3, delay_samples=100):
         yield y
 
 
-@njit
+@jit(nopython=True, parallel=True)
 # @make_typed
 def zero_detector(x_all):
     sign = 0
@@ -64,7 +73,7 @@ def zero_detector(x_all):
         yield y
 
 
-@njit
+@jit(nopython=True, parallel=True)
 # @make_typed
 def zero_detector2(x_all):
     """A variation of `zero_detector()` that only detects rising edges of zero crossings.
@@ -77,11 +86,3 @@ def zero_detector2(x_all):
         sign = 0 if x >= 0 else 1
         y = sign & ~last_sign  # NB using two's complement, so need -ve & +ve i.e. 1 & 0
         yield y
-
-
-def make_typed(inner):
-    """Wrapper to change first arg `x_all` to a numba.typed.List for speedup and avoid deprecation warning"""
-    def outer(*args, **kwargs):
-        x_all_typed = typed.List(args[0])
-        return inner(x_all_typed, *args[1:], **kwargs)
-    return outer
