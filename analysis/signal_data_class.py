@@ -136,8 +136,6 @@ class SignalData(object):
                 misfires += 1
         misfire_rate = misfires / total_triggers
 
-        performance = (hitrate + (1 - misfire_rate)) / 2
-
         if verbose:
             print("self.delay_samples:", self.delay_samples)
             print("self.inv_frac:", self.inv_frac)
@@ -148,7 +146,6 @@ class SignalData(object):
             print("hits:", hits)
             print("misfires:", misfires)
             print("misfire_rate:", misfire_rate)  # Possible misleading statistic
-            print("performance:", performance)  # Possible misleading statistic
             print()
 
         # Record test parameters and outputs
@@ -162,7 +159,6 @@ class SignalData(object):
         test_parameters["hitrate"] = hitrate
         test_parameters["misfires"] = misfires
         test_parameters["misfire_rate"] = misfire_rate
-        test_parameters["performance"] = performance
 
         return test_parameters
 
@@ -182,32 +178,3 @@ class SignalData(object):
             if verbose: print()
         if verbose: print("computation completed")
         return all_performances
-
-    # def foobuh(self, delay_samples, inv_frac, tolerance):
-    #     cfd_done = self.cfd(self.sig_fil, delay_samples=delay_samples, inv_frac=inv_frac)
-    #     sig_cfd = np.array(list(cfd_done))
-    #     zd_done = self.zd(sig_cfd)
-    #     output = np.array(list(zd_done))
-    #     print(".")
-    #     return self.get_inv_frac_performance(tolerance=tolerance, output_to_analyse=output)
-
-    # def get_performance_parallel(self, inv_frac_vals, delay_samples_vals, tolerance=100e-6, verbose=False):
-    #     collect_result = lambda results: self.all_computed_performances.append(results)
-    #
-    #     np = mp.cpu_count()
-    #     with Pool(processes=np) as pool:
-    #
-    #         for delay_samples in delay_samples_vals:
-    #             if verbose: print("." * len(inv_frac_vals) + f" {delay_samples}")
-    #             for inv_frac in inv_frac_vals:
-    #                 POOL.apply_async(self.foobuh,
-    #                                  args=(self, delay_samples, inv_frac, tolerance),
-    #                                  callback=collect_result,
-    #                                  )
-    #                 # if verbose: print(".", end="")
-    #             # if verbose: print()
-    #     # POOL.close()
-    #     # if verbose: print("awaiting syncs")
-    #     # POOL.join()
-    #     if verbose: print("computation completed")
-    #     return self.all_computed_performances
