@@ -1,6 +1,7 @@
 import time
+import numpy as np
 from default_constants import *
-from algorithms import *
+from algorithms import lp_filter, cfd, zero_detector2, human_time
 
 
 class SignalData(object):
@@ -79,15 +80,6 @@ class SignalData(object):
         zd_done = self.zd(self.sig_cfd)
         self.output = np.array(list(zd_done))
         return self.output
-
-    def get_zero_data(self):
-        bar_t = []
-        bar_z = []
-        for index, item in enumerate(self.output):
-            if item != 0:
-                bar_t.append(self.t[index])
-                bar_z.append(item)
-        return bar_t, bar_z
 
     def set_truth_data(self, truth_data):
         self.truth_data = truth_data
@@ -188,7 +180,7 @@ class SignalData(object):
             end_wall = time.time()
             end_cpu = time.process_time()
             print()
-            print("Wall time:", int(end_wall - start_wall))
-            print("CPU time:", int(end_cpu - start_cpu))
+            print("Wall time:", human_time(end_wall - start_wall))
+            print("CPU time:", human_time(end_cpu - start_cpu))
 
         return all_performances

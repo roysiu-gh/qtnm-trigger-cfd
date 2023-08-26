@@ -7,6 +7,26 @@ import pkg_resources
 __requires__ = "numpy==1.24"  # For numba
 pkg_resources.require(__requires__)
 
+TIME_DURATION_UNITS = (
+    ("week", 60*60*24*7),
+    ("day", 60*60*24),
+    ("hour", 60*60),
+    ("min", 60),
+    ("sec", 1)
+)
+
+
+def human_time(seconds):
+    seconds = int(seconds)
+    if seconds == 0:
+        return 'inf'
+    parts = []
+    for unit, div in TIME_DURATION_UNITS:
+        amount, seconds = divmod(int(seconds), div)
+        if amount > 0:
+            parts.append(f"{ amount } { unit }{ '' if amount == 1 else 's' }")
+    return ", ".join(parts)
+
 
 def make_typed(inner):
     """Wrapper to change first arg `x_all` to a numba.typed.List for speedup and avoid deprecation warning"""
@@ -15,7 +35,6 @@ def make_typed(inner):
         return inner(x_all_typed, *args[1:], **kwargs)
         # return inner(*args, **kwargs)
     return outer
-
 
 @jit(nopython=True)
 # @make_typed
@@ -37,7 +56,7 @@ def lp_filter(x_all, DECAY_FULL_POWER=10, DECAY_PART=900):
         yield y
 
 
-@jit(nopython=True, parallel=True)
+@jit(nopython=True)
 # @make_typed
 def cfd(x_all, inv_frac=3, delay_samples=100):
     """Simulation of the constant fraction discriminator (CFD) described in Verilog.
