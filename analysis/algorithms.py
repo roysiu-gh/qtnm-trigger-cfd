@@ -36,8 +36,9 @@ def make_typed(inner):
         # return inner(*args, **kwargs)
     return outer
 
+
+@make_typed
 @jit(nopython=True)
-# @make_typed
 def lp_filter(x_all, DECAY_FULL_POWER=10, DECAY_PART=900):
     """ Low-pass IIR filter simulation of Verilog implementation
     Write as a generator to simulate verilog functionality
@@ -57,7 +58,6 @@ def lp_filter(x_all, DECAY_FULL_POWER=10, DECAY_PART=900):
 
 
 @jit(nopython=True)
-# @make_typed
 def cfd(x_all, inv_frac=3, delay_samples=100):
     """Simulation of the constant fraction discriminator (CFD) described in Verilog.
     As normally described, the parameters are `fraction` and `delay`.
@@ -81,7 +81,6 @@ def cfd(x_all, inv_frac=3, delay_samples=100):
 
 
 @jit(nopython=True, parallel=True)
-# @make_typed
 def zero_detector(x_all):
     sign = 0
     for x in x_all:  # Simulate `always @ (posedge clk)`
@@ -94,7 +93,6 @@ def zero_detector(x_all):
 
 
 @jit(nopython=True)
-# @make_typed
 def zero_detector2(x_all):
     """A variation of `zero_detector()` that only detects rising edges of zero crossings.
     NB: using two's complement, so MSB is 0 for non-negatives (including 0), and 1 for negatives
