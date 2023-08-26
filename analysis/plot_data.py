@@ -25,14 +25,14 @@ def plot_inv_frac(df, delay_samples=DELAY_SAMPLES, title="untitled"):
     ax1_2.plot(df.inv_frac, df.misfires, color=color)
     ax1_2.tick_params(axis='y', labelcolor=color)
 
-    # Get and plot misfire rates and performances
+    # Get and plot hitrates and misfire rates
 
     ax2.set_title(f"delay_samples={delay_samples}")
     ax2.set_xlabel("inv_frac")
     ax2.set_ylim([0, 1.05])
     ax2.plot(df.inv_frac, df.hitrate, label="Hitrate", color="tab:green", linestyle="dotted")
     ax2.plot(df.inv_frac, df.misfire_rate, label="Misfire Rate", color="tab:red", linestyle="dotted")
-    ax2.plot(df.inv_frac, df.performance, label="Combined Performance", color="tab:blue")
+    # ax2.plot(df.inv_frac, df.performance, label="Combined Performance", color="tab:blue")
     ax2.legend()
 
     fig.tight_layout()  # Otherwise the right y-label is slightly clipped (for axis1)

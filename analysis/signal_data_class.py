@@ -1,3 +1,4 @@
+import time
 from default_constants import *
 from algorithms import *
 
@@ -9,7 +10,7 @@ class SignalData(object):
 
                  filter_alg=lp_filter,
                  cfd_alg=cfd,
-                 zero_detector_alg=zero_detector,
+                 zero_detector_alg=zero_detector2,
 
                  slice_start=0,
                  slice_end=None,  # None sends the slice to the end
@@ -164,17 +165,30 @@ class SignalData(object):
 
     # @njit
     def get_performance(self, inv_frac_vals, delay_samples_vals, tolerance=100e-6, verbose=False):
+        if verbose:
+            start_wall = time.time()
+            start_cpu = time.process_time()
         all_performances = []
+
+        if verbose: print("." * len(delay_samples_vals))
         for delay_samples in delay_samples_vals:
             self.delay_samples = delay_samples
-            if verbose: print("." * len(inv_frac_vals) + f" {delay_samples}")
+            # if verbose: print("." * len(inv_frac_vals) + f" {delay_samples}")
             for inv_frac in inv_frac_vals:
                 self.inv_frac = inv_frac
                 # Only run CFD and ZD, where self.regenerate() would also fun the amplifier and filter
                 self.run_cfd()
                 self.run_zd()
                 all_performances.append(self.get_inv_frac_performance(tolerance=tolerance))
-                if verbose: print(".", end="")
-            if verbose: print()
-        if verbose: print("computation completed")
+                # if verbose: print(".", end="")
+            # if verbose: print()
+            if verbose: print(".", end="")
+
+        if verbose:
+            end_wall = time.time()
+            end_cpu = time.process_time()
+            print()
+            print("Wall time:", int(end_wall - start_wall))
+            print("CPU time:", int(end_cpu - start_cpu))
+
         return all_performances

@@ -17,12 +17,13 @@ def make_typed(inner):
     return outer
 
 
-@jit(nopython=True, parallel=True)
+@jit(nopython=True)
 # @make_typed
 def lp_filter(x_all, DECAY_FULL_POWER=10, DECAY_PART=900):
     """ Low-pass IIR filter simulation of Verilog implementation
     Write as a generator to simulate verilog functionality
     Default DECAY_FULL_POWER = 10 so that DECAY_FULL = 1024
+    Cannot parallelise
     """
     a = (2 ** DECAY_FULL_POWER) - DECAY_PART
     b = DECAY_PART
@@ -73,11 +74,12 @@ def zero_detector(x_all):
         yield y
 
 
-@jit(nopython=True, parallel=True)
+@jit(nopython=True)
 # @make_typed
 def zero_detector2(x_all):
     """A variation of `zero_detector()` that only detects rising edges of zero crossings.
     NB: using two's complement, so MSB is 0 for non-negatives (including 0), and 1 for negatives
+    Cannot parallelise
     """
     sign = 0
     for x in x_all:  # Simulate `always @ (posedge clk)`
