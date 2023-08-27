@@ -11,7 +11,7 @@ class InteractiveTrigger(SignalData):
     def __init__(self,
                  data,
                  title="untitled",
-                 # yscale="log",
+                 yscale="linear",
                  delay_samples=DELAY_SAMPLES,
                  inv_frac=INV_FRAC,
                  *args,
@@ -31,15 +31,16 @@ class InteractiveTrigger(SignalData):
         self.fig.suptitle(title)
 
         self.axis.set_xlim(self.view_range)
-        # self.axis.set_yscale(yscale)
+        self.axis.set_yscale(yscale)
         self.axis.plot(self.t, self.sig_amp, label="Amplifier output")
         self.axis.plot(self.t, self.sig_fil, label="Filter output")
         self.plt_cfd, = self.axis.plot(self.t, self.sig_cfd, label="CFD output")
-        self.plt_zer = self.axis.scatter(*self.get_nonzeros(self.output),
-                                         label="ZD output", marker="x", color="purple", s=1000, zorder=3)
-        self.plt_tru = self.axis.scatter(*self.get_nonzeros(self.truth_data),
-                                         label="Truth data", marker="1", color="yellow", s=500, zorder=4,
-                                         linewidths=2)
+        self.plt_zer = self.axis.scatter(*self.get_nonzeros(self.output))
+        self.plt_tru = self.axis.scatter(*self.get_nonzeros(self.truth_data))
+
+        # Show triggers and truth data with graphics settings as in update(). Works by... logic.
+        self.update(delay_samples=None, inv_frac=None, view_range=None)
+        # self.update(delay_samples=self.delay_samples, inv_frac=self.inv_frac, view_range=self.view_range)
 
         delay_samples_slider = IntSlider(min=0, max=300, step=10,
                                          value=self.delay_samples, description="Delay samples",
@@ -49,7 +50,7 @@ class InteractiveTrigger(SignalData):
                                       layout=Layout(width="50%"), )
         view_range_slider = FloatRangeSlider(min=0, max=view_range_max, step=10e-6,
                                              value=[0, view_range_max], description="View range",
-                                             layout=Layout(width="100%"),
+                                             layout=Layout(width="95%"),
                                              )
 
         self.widget = interactive(self.update,
