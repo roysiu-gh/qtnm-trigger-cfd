@@ -27,7 +27,7 @@ class InteractiveTrigger(SignalData):
         view_range_max = list(self.all_t)[-1]  # NB [-1] indexing does not work with pandas dataframe
         self.view_range = [0, view_range_max]
 
-        self.fig, self.axis = plt.subplots(figsize=(10, 6))
+        self.fig, self.axis = plt.subplots(figsize=FIGSIZE)
         self.fig.suptitle(title)
 
         self.axis.set_xlim(self.view_range)
@@ -91,7 +91,6 @@ class InteractiveTrigger(SignalData):
                                              linewidths=2)
 
         plt.legend(loc="upper right")
-        plt.show()
 
     def show(self):
         display(self.widget)

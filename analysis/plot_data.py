@@ -1,5 +1,5 @@
 import matplotlib.pyplot as plt
-from default_constants import DELAY_SAMPLES
+from default_constants import DELAY_SAMPLES, FIGSIZE
 
 
 def plot_inv_frac(df, delay_samples=DELAY_SAMPLES, title="untitled"):
@@ -7,8 +7,8 @@ def plot_inv_frac(df, delay_samples=DELAY_SAMPLES, title="untitled"):
 
     fig, (ax1_1, ax2) = plt.subplots(1, 2)
     fig.suptitle(title)
-    fig.set_figwidth(12)
-    fig.set_figheight(4)
+    fig.set_figwidth(FIGSIZE[0])
+    fig.set_figheight(FIGSIZE[1])
 
     # Initial plot
 
@@ -45,7 +45,7 @@ def plot_all_3d(df, title="untitled"):
     fig, (ax1, ax2) = plt.subplots(1, 2,
                                    subplot_kw={"projection": "3d"},
                                    # gridspec_kw = {'wspace':0.01, 'hspace':0},
-                                   figsize=(12, 8))
+                                   figsize=FIGSIZE)
     x = df.inv_frac
     y = df.delay_samples
 
