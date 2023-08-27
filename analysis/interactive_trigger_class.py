@@ -87,9 +87,9 @@ class InteractiveTrigger(SignalData):
             self.plt_zer = self.axis.scatter(*self.get_nonzeros(self.output),
                                              label="ZD output", marker="x", color="purple", s=1000, zorder=3)
             self.plt_tru.remove()
-            self.plt_tru = self.axis.scatter(*self.get_nonzeros(self.truth_data),
-                                             label="Truth data", marker="1", color="yellow", s=500, zorder=4,
-                                             linewidths=2)
+            self.plt_tru = self.axis.errorbar(*self.get_nonzeros(self.truth_data), xerr=self.tolerance,
+                                              fmt="|", capsize=25, markeredgewidth=2, #elinewidth=5,
+                                              label="Truth data", color="yellow", zorder=4)
 
         plt.legend(loc="upper right")
 

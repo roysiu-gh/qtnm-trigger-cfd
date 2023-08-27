@@ -15,9 +15,10 @@ class SignalData(object):
 
                  slice_start=0,
                  slice_end=None,  # None sends the slice to the end
+                 amp_power=16,
                  delay_samples=DELAY_SAMPLES,
                  inv_frac=INV_FRAC,
-                 amp_power=16,
+                 tolerance=TOLERANCE,
                  ):
         self.all_t = data[0]
         self.all_sig = data[1]
@@ -44,6 +45,7 @@ class SignalData(object):
         self.delay_samples = delay_samples
         self.inv_frac = inv_frac
         self.amp_power = amp_power
+        self.tolerance = tolerance
 
         self.regenerate()
 
@@ -85,19 +87,20 @@ class SignalData(object):
         self.truth_data = truth_data
         self.slice()
 
-    def get_inv_frac_performance(self, tolerance, output_to_analyse=None, verbose=False):
+    def get_current_performance(self, tolerance=None, output_to_analyse=None, verbose=False):
         """
         If output_to_analyse is None, use self.output. This is so that get_performance_parallel() can
         run without changing instance variables and affecting other processes.
         --- make this a class method?
         """
+        self.tolerance = tolerance or self.tolerance
         if output_to_analyse is None:
             output_to_analyse = self.output
 
         test_parameters = {}
 
         spacing = self.all_t[1] - self.all_t[0]  # Assumes constant sample time-spacing
-        tolerance_samples = int(tolerance / spacing)
+        tolerance_samples = int(self.tolerance / spacing)
 
         total_signals = np.sum(self.truth_data)
         total_triggers = np.sum(output_to_analyse)
@@ -132,7 +135,7 @@ class SignalData(object):
         if verbose:
             print("self.delay_samples:", self.delay_samples)
             print("self.inv_frac:", self.inv_frac)
-            print("tolerance:", tolerance)
+            print("tolerance:", self.tolerance)
             print("tolerance_samples:", tolerance_samples)
             print("total_signals:", total_signals)
             print("total_triggers:", total_triggers)
@@ -144,7 +147,7 @@ class SignalData(object):
         # Record test parameters and outputs
         test_parameters["delay_samples"] = self.delay_samples
         test_parameters["inv_frac"] = self.inv_frac
-        test_parameters["tolerance"] = tolerance
+        test_parameters["tolerance"] = self.tolerance
         test_parameters["tolerance_samples"] = tolerance_samples
         test_parameters["total_signals"] = total_signals
         test_parameters["total_triggers"] = total_triggers
@@ -156,7 +159,8 @@ class SignalData(object):
         return test_parameters
 
     # @njit
-    def get_performance(self, inv_frac_vals, delay_samples_vals, tolerance=100e-6, verbose=False):
+    def get_performance(self, inv_frac_vals, delay_samples_vals, tolerance=None, verbose=False):
+        self.tolerance = tolerance or self.tolerance
         if verbose:
             start_wall = time.time()
             start_cpu = time.process_time()
@@ -171,7 +175,7 @@ class SignalData(object):
                 # Only run CFD and ZD, where self.regenerate() would also fun the amplifier and filter
                 self.run_cfd()
                 self.run_zd()
-                all_performances.append(self.get_inv_frac_performance(tolerance=tolerance))
+                all_performances.append(self.get_current_performance(tolerance=self.tolerance))
                 # if verbose: print(".", end="")
             # if verbose: print()
             if verbose: print(".", end="")

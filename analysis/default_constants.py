@@ -1,6 +1,7 @@
 DELAY = 0.2
 FRACTION = 0.2
 SNR = 3  # Signal-to-noise ratio
+TOLERANCE = 100e-6
 
 SLICE_START = 0
 SLICE_END = 10000
