@@ -4,7 +4,7 @@ from default_constants import *
 from signal_data_class import SignalData
 
 from IPython.display import display
-from ipywidgets import interactive, IntSlider, FloatRangeSlider, FloatSlider, Layout
+from ipywidgets import interactive, Layout, IntSlider, FloatRangeSlider, FloatSlider, Label
 
 
 class InteractiveTrigger(SignalData):
@@ -37,6 +37,9 @@ class InteractiveTrigger(SignalData):
         self.plt_cfd, = self.axis.plot(self.t, self.sig_cfd, label="CFD output")
         self.plt_zer = self.axis.scatter(*self.get_nonzeros(self.output))
         self.plt_tru = self.axis.scatter(*self.get_nonzeros(self.truth_data))
+
+        self.hitrate_text = Label()
+        self.misfire_rate_text = Label()
 
         # Show triggers and truth data with graphics settings as in update(). Works by... logic.
         self.update(delay_samples=None, inv_frac=None, view_range=None)
@@ -82,16 +85,22 @@ class InteractiveTrigger(SignalData):
             self.run_cfd()
             self.run_zd()
 
+            test_parameters = self.get_current_performance()
+            hitrate = test_parameters["hitrate"]
+            misfire_rate = test_parameters["misfire_rate"]
+            self.hitrate_text.value = f"Hitrate: {hitrate:.3f}"
+            self.misfire_rate_text.value = f"Misfire rate: {misfire_rate:.3f}"
+
             self.plt_cfd.set_ydata(self.sig_cfd)
             self.plt_zer.remove()
             self.plt_zer = self.axis.scatter(*self.get_nonzeros(self.output),
                                              label="ZD output", marker="x", color="purple", s=1000, zorder=3)
             self.plt_tru.remove()
             self.plt_tru = self.axis.errorbar(*self.get_nonzeros(self.truth_data), xerr=self.tolerance,
-                                              fmt="|", capsize=25, markeredgewidth=2, #elinewidth=5,
+                                              fmt="|", capsize=25, markeredgewidth=2,
                                               label="Truth data", color="yellow", zorder=4)
 
         plt.legend(loc="upper right")
 
     def show(self):
-        display(self.widget)
+        display(self.hitrate_text, self.misfire_rate_text, self.widget)
