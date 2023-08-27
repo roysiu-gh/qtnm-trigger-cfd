@@ -32,7 +32,6 @@ def plot_inv_frac(df, delay_samples=DELAY_SAMPLES, title="untitled"):
     ax2.set_ylim([0, 1.05])
     ax2.plot(df.inv_frac, df.hitrate, label="Hitrate", color="tab:green", linestyle="dotted")
     ax2.plot(df.inv_frac, df.misfire_rate, label="Misfire Rate", color="tab:red", linestyle="dotted")
-    # ax2.plot(df.inv_frac, df.performance, label="Combined Performance", color="tab:blue")
     ax2.legend()
 
     fig.tight_layout()  # Otherwise the right y-label is slightly clipped (for axis1)
@@ -44,7 +43,6 @@ def plot_inv_frac(df, delay_samples=DELAY_SAMPLES, title="untitled"):
 def plot_all_3d(df, title="untitled"):
     fig, (ax1, ax2) = plt.subplots(1, 2,
                                    subplot_kw={"projection": "3d"},
-                                   # gridspec_kw = {'wspace':0.01, 'hspace':0},
                                    figsize=FIGSIZE)
     x = df.inv_frac
     y = df.delay_samples
@@ -67,5 +65,26 @@ def plot_all_3d(df, title="untitled"):
     ax2.set_zlim([0, 1])
     ax2.plot_trisurf(x, y, df.misfire_rate, cmap=cmap, linewidth=0.2)
     plt.show()
+
+    return fig
+
+
+def plot_misfires(df, title="untitled"):
+    """3D plot of misfires, useful for looking at noise."""
+    fig, axis = plt.subplots(1, 1,
+                           subplot_kw={"projection": "3d"},
+                           figsize=FIGSIZE)
+    x = df.inv_frac
+    y = df.delay_samples
+
+    fig.suptitle(title)
+    fig.tight_layout()
+
+    axis.set_title("Misfires")
+    cmap = plt.get_cmap("plasma")
+    axis.set_xlabel("inv_frac")
+    axis.set_ylabel("delay_samples")
+    axis.set_zlabel("misfires")
+    axis.plot_trisurf(x, y, df.misfires, cmap=cmap, linewidth=0.2)
 
     return fig
