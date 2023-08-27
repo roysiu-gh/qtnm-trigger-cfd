@@ -11,6 +11,7 @@ class InteractiveTrigger(SignalData):
     def __init__(self,
                  data,
                  title="untitled",
+                 # yscale="log",
                  delay_samples=DELAY_SAMPLES,
                  inv_frac=INV_FRAC,
                  *args,
@@ -23,18 +24,22 @@ class InteractiveTrigger(SignalData):
             *args,
             **kwargs,
         )
-        view_range_max = self.t[-1]
+        view_range_max = list(self.all_t)[-1]  # NB [-1] indexing does not work with pandas dataframe
         self.view_range = [0, view_range_max]
 
         self.fig, self.axis = plt.subplots(figsize=(10, 6))
         self.fig.suptitle(title)
 
         self.axis.set_xlim(self.view_range)
+        # self.axis.set_yscale(yscale)
         self.axis.plot(self.t, self.sig_amp, label="Amplifier output")
         self.axis.plot(self.t, self.sig_fil, label="Filter output")
         self.plt_cfd, = self.axis.plot(self.t, self.sig_cfd, label="CFD output")
-        self.plt_zer = self.axis.scatter(*self.get_nonzeros(self.output))
-        self.plt_tru = self.axis.scatter(*self.get_nonzeros(self.truth_data))
+        self.plt_zer = self.axis.scatter(*self.get_nonzeros(self.output),
+                                         label="ZD output", marker="x", color="purple", s=1000, zorder=3)
+        self.plt_tru = self.axis.scatter(*self.get_nonzeros(self.truth_data),
+                                         label="Truth data", marker="1", color="yellow", s=500, zorder=4,
+                                         linewidths=2)
 
         delay_samples_slider = IntSlider(min=0, max=300, step=10,
                                          value=self.delay_samples, description="Delay samples",
