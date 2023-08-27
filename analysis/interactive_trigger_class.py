@@ -4,17 +4,13 @@ from default_constants import *
 from signal_data_class import SignalData
 
 from IPython.display import display
-from ipywidgets import interactive, IntSlider, FloatSlider, Layout
+from ipywidgets import interactive, IntSlider, FloatRangeSlider, FloatSlider, Layout
 
 
 class InteractiveTrigger(SignalData):
     def __init__(self,
                  data,
                  title="untitled",
-                 # widget_t_start=0,
-                 # widget_t_width=1, #!!!
-                 # slice_start=SLICE_START,
-                 # slice_end=SLICE_END,
                  delay_samples=DELAY_SAMPLES,
                  inv_frac=INV_FRAC,
                  *args,
@@ -22,21 +18,18 @@ class InteractiveTrigger(SignalData):
                  ):
         super().__init__(
             data=data,
-            # slice_start=slice_start,
-            # slice_end=slice_end,
             delay_samples=delay_samples,
             inv_frac=inv_frac,
             *args,
             **kwargs,
         )
-        self.widget_t_start = 0
-        self.widget_t_width = self.t[-1]
-        widget_t_max = self.t[-1]
+        view_range_max = self.t[-1]
+        self.view_range = [0, view_range_max]
 
         self.fig, self.axis = plt.subplots(figsize=(10, 6))
         self.fig.suptitle(title)
 
-        self.axis.set_xlim(self.widget_t_start, self.widget_t_start + self.widget_t_width)
+        self.axis.set_xlim(self.view_range)
         self.axis.plot(self.t, self.sig_amp, label="Amplifier output")
         self.axis.plot(self.t, self.sig_fil, label="Filter output")
         self.plt_cfd, = self.axis.plot(self.t, self.sig_cfd, label="CFD output")
@@ -49,19 +42,15 @@ class InteractiveTrigger(SignalData):
         inv_frac_slider = FloatSlider(min=0, max=6, step=0.1,
                                       value=self.inv_frac, description="Inverse fraction",
                                       layout=Layout(width="50%"), )
-        # Soft-code the following ranges
-        widget_t_start_slider = FloatSlider(min=0, max=widget_t_max, step=10e-6,
-                                            value=self.widget_t_start, description="Time start",
-                                            layout=Layout(width="100%"), )
-        widget_t_width_slider = FloatSlider(min=0, max=widget_t_max, step=10e-6,
-                                            value=self.widget_t_width, description="Time width",
-                                            layout=Layout(width="100%"), )
+        view_range_slider = FloatRangeSlider(min=0, max=view_range_max, step=10e-6,
+                                             value=[0, view_range_max], description="View range",
+                                             layout=Layout(width="100%"),
+                                             )
 
         self.widget = interactive(self.update,
                                   delay_samples=delay_samples_slider,
                                   inv_frac=inv_frac_slider,
-                                  widget_t_start=widget_t_start_slider,
-                                  widget_t_width=widget_t_width_slider,
+                                  view_range=view_range_slider,
                                   )
 
     def get_nonzeros(self, series):
@@ -74,12 +63,10 @@ class InteractiveTrigger(SignalData):
                 nonzerodata.append(item)
         return times, nonzerodata
 
-    def update(self, delay_samples=None, inv_frac=None, widget_t_start=None, widget_t_width=None):
-        if (self.widget_t_start != widget_t_start) or (self.widget_t_width != widget_t_width):
-            self.widget_t_start = widget_t_start or self.widget_t_start
-            self.widget_t_width = widget_t_width or self.widget_t_width
-
-            self.axis.set_xlim(widget_t_start, widget_t_start + widget_t_width)
+    def update(self, delay_samples=None, inv_frac=None, view_range=None):
+        if self.view_range != view_range:
+            self.view_range = view_range or self.view_range
+            self.axis.set_xlim(view_range)
 
         if (self.inv_frac != inv_frac) or (self.delay_samples != delay_samples):
             # Only update if not none:
