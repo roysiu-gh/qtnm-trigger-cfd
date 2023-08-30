@@ -21,8 +21,8 @@ class SignalData(object):
                  inv_frac=INV_FRAC,
                  tolerance=TOLERANCE,
                  ):
-        self.all_t = np.array( data[0] )
-        self.all_sig = np.array( data[1] )
+        self.all_t = np.array(data[0])
+        self.all_sig = np.array(data[1])
 
         self.filter = filter_alg
         self.cfd = cfd_alg
@@ -31,7 +31,7 @@ class SignalData(object):
         if truth_data is not None:
             if len(data[0]) != len(truth_data):
                 raise IndexError(f"data[0] and truth_data length mismatch: {len(data[0])} and {len(truth_data)}")
-            self.all_truth_data = np.array( truth_data )
+            self.all_truth_data = np.array(truth_data)
         else:
             self.all_truth_data = np.zeros_like(self.all_t)
 
@@ -67,7 +67,7 @@ class SignalData(object):
         self.truth_data = self.all_truth_data[self.slice_start:self.slice_end]
 
     def run_amp(self):
-        self.sig_amp = ( self.sig * (2 ** self.amp_power) ).astype(int)
+        self.sig_amp = (self.sig * (2 ** self.amp_power)).astype(int)
         return self.sig_amp
 
     def run_fil(self):

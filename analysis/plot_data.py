@@ -72,8 +72,8 @@ def plot_all_3d(df, title="untitled"):
 def plot_misfires(df, title="untitled"):
     """3D plot of misfires, useful for looking at noise."""
     fig, axis = plt.subplots(1, 1,
-                           subplot_kw={"projection": "3d"},
-                           figsize=FIGSIZE)
+                             subplot_kw={"projection": "3d"},
+                             figsize=FIGSIZE)
     x = df.inv_frac
     y = df.delay_samples
 

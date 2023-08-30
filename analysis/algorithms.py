@@ -1,7 +1,7 @@
 # Simulated functions written as generators to closer replicate the description in Verilog
 
 import numpy as np
-from numba import jit, typed
+from numba import jit
 
 import pkg_resources
 
@@ -29,18 +29,6 @@ def human_time(seconds):
     return ", ".join(parts)
 
 
-def make_typed(inner):
-    """Wrapper to change first arg `x_all` to a numba.typed.List for speedup and avoid deprecation warning"""
-
-    def outer(*args, **kwargs):
-        x_all_typed = typed.List(args[0])
-        return inner(x_all_typed, *args[1:], **kwargs)
-        # return inner(*args, **kwargs)
-
-    return outer
-
-
-# @make_typed
 @jit(nopython=True)
 def lp_filter(x_all, DECAY_FULL_POWER=10, DECAY_PART=900):
     """ Low-pass IIR filter simulation of Verilog implementation
@@ -111,36 +99,6 @@ def zero_detector2(x_all):
 
 
 # Performance analysis functions
-
-@jit(nopython=True)  # Numba can't parallelise
-def get_performance_compiled(output_to_analyse, truth_data, tolerance_samples):
-    length = len(output_to_analyse)
-    hits = 0
-    for idx, val in enumerate(truth_data):
-        if not val:
-            continue
-        lower = max(0, idx - tolerance_samples)
-        upper = min(idx + tolerance_samples, length)
-        for search_idx in range(lower, upper):
-            if output_to_analyse[search_idx]:
-                hits += 1
-                break
-        else:
-            continue
-
-    misfires = 0
-    for idx, val in enumerate(output_to_analyse):
-        if not val:
-            continue
-        lower = max(0, idx - tolerance_samples)
-        upper = min(idx + tolerance_samples, length)
-        for search_idx in range(lower, upper):
-            if truth_data[search_idx]:
-                break
-        else:
-            misfires += 1
-
-    return hits, misfires
 
 
 @jit(nopython=True)  # Numba can't parallelise
