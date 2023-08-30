@@ -2,7 +2,7 @@ import time
 import numpy as np
 
 from default_constants import *
-from algorithms import lp_filter, cfd, zero_detector2, human_time, get_performance_compiled
+from algorithms import lp_filter, cfd, zero_detector2, human_time, compare_data_to_success_condition
 
 
 class SignalData(object):
@@ -104,15 +104,12 @@ class SignalData(object):
         spacing = self.all_t[1] - self.all_t[0]  # Assumes constant sample time-spacing
         tolerance_samples = int(self.tolerance / spacing)
 
-        total_signals = np.sum(self.truth_data)
-        total_triggers = np.sum(output_to_analyse)
+        total_signals, hits = compare_data_to_success_condition(output_to_analyse, self.truth_data,
+                                                                tolerance_samples=tolerance_samples)
+        total_triggers, misfires_complement = compare_data_to_success_condition(self.truth_data, output_to_analyse,
+                                                                                tolerance_samples=tolerance_samples)
 
-        # Convert first two parameters to np.array as pandas.Series not compatible with numba
-        # Note typed.List is MUCH slower! Not sure why
-        hits, misfires = get_performance_compiled(output_to_analyse=output_to_analyse,
-                                                  truth_data=self.truth_data,
-                                                  tolerance_samples=tolerance_samples,
-                                                  )
+        misfires = total_triggers - misfires_complement
 
         hitrate = hits / total_signals
         misfire_rate = misfires / total_triggers

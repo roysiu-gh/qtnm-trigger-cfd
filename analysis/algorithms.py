@@ -4,13 +4,14 @@ import numpy as np
 from numba import jit, typed
 
 import pkg_resources
+
 __requires__ = "numpy==1.24"  # For numba
 pkg_resources.require(__requires__)
 
 TIME_DURATION_UNITS = (
-    ("week", 60*60*24*7),
-    ("day", 60*60*24),
-    ("hour", 60*60),
+    ("week", 60 * 60 * 24 * 7),
+    ("day", 60 * 60 * 24),
+    ("hour", 60 * 60),
     ("min", 60),
     ("sec", 1)
 )
@@ -24,16 +25,18 @@ def human_time(seconds):
     for unit, div in TIME_DURATION_UNITS:
         amount, seconds = divmod(int(seconds), div)
         if amount > 0:
-            parts.append(f"{ amount } { unit }{ '' if amount == 1 else 's' }")
+            parts.append(f"{amount} {unit}{'' if amount == 1 else 's'}")
     return ", ".join(parts)
 
 
 def make_typed(inner):
     """Wrapper to change first arg `x_all` to a numba.typed.List for speedup and avoid deprecation warning"""
+
     def outer(*args, **kwargs):
         x_all_typed = typed.List(args[0])
         return inner(x_all_typed, *args[1:], **kwargs)
         # return inner(*args, **kwargs)
+
     return outer
 
 
@@ -106,6 +109,7 @@ def zero_detector2(x_all):
         y = sign & ~last_sign  # NB using two's complement, so need -ve & +ve i.e. 1 & 0
         yield y
 
+
 # Performance analysis functions
 
 @jit(nopython=True)  # Numba can't parallelise
@@ -137,3 +141,27 @@ def get_performance_compiled(output_to_analyse, truth_data, tolerance_samples):
             misfires += 1
 
     return hits, misfires
+
+
+@jit(nopython=True)  # Numba can't parallelise
+def compare_data_to_success_condition(iterate_through, search_for, tolerance_samples):
+    """Loop through iterate_through to count values against the success condition search_for
+    within tolerance_samples. Note for counting misfires this returns the complement."""
+    length = len(iterate_through)
+
+    total = 0  # Already looping through list so probably faster than calling np.sum()
+    successes = 0
+    for idx, val in enumerate(search_for):
+        if not val:
+            continue
+        total += 1
+        lower = max(0, idx - tolerance_samples)
+        upper = min(idx + tolerance_samples, length)
+        for search_idx in range(lower, upper):
+            if iterate_through[search_idx]:
+                successes += 1
+                break
+        else:
+            continue
+
+    return total, successes
