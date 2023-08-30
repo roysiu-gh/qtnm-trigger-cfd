@@ -37,7 +37,7 @@ def make_typed(inner):
     return outer
 
 
-@make_typed
+# @make_typed
 @jit(nopython=True)
 def lp_filter(x_all, DECAY_FULL_POWER=10, DECAY_PART=900):
     """ Low-pass IIR filter simulation of Verilog implementation
@@ -105,3 +105,35 @@ def zero_detector2(x_all):
         sign = 0 if x >= 0 else 1
         y = sign & ~last_sign  # NB using two's complement, so need -ve & +ve i.e. 1 & 0
         yield y
+
+# Performance analysis functions
+
+@jit(nopython=True)  # Numba can't parallelise
+def get_performance_compiled(output_to_analyse, truth_data, tolerance_samples):
+    length = len(output_to_analyse)
+    hits = 0
+    for idx, val in enumerate(truth_data):
+        if not val:
+            continue
+        lower = max(0, idx - tolerance_samples)
+        upper = min(idx + tolerance_samples, length)
+        for search_idx in range(lower, upper):
+            if output_to_analyse[search_idx]:
+                hits += 1
+                break
+        else:
+            continue
+
+    misfires = 0
+    for idx, val in enumerate(output_to_analyse):
+        if not val:
+            continue
+        lower = max(0, idx - tolerance_samples)
+        upper = min(idx + tolerance_samples, length)
+        for search_idx in range(lower, upper):
+            if truth_data[search_idx]:
+                break
+        else:
+            misfires += 1
+
+    return hits, misfires

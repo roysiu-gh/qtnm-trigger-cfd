@@ -1,7 +1,8 @@
 import time
 import numpy as np
+
 from default_constants import *
-from algorithms import lp_filter, cfd, zero_detector2, human_time
+from algorithms import lp_filter, cfd, zero_detector2, human_time, get_performance_compiled
 
 
 class SignalData(object):
@@ -20,8 +21,8 @@ class SignalData(object):
                  inv_frac=INV_FRAC,
                  tolerance=TOLERANCE,
                  ):
-        self.all_t = data[0]
-        self.all_sig = data[1]
+        self.all_t = np.array( data[0] )
+        self.all_sig = np.array( data[1] )
 
         self.filter = filter_alg
         self.cfd = cfd_alg
@@ -29,8 +30,8 @@ class SignalData(object):
 
         if truth_data is not None:
             if len(data[0]) != len(truth_data):
-                raise IndexError(f"data[0] and truth_data length mismatch: { len(data[0]) } and { len(truth_data) }")
-            self.all_truth_data = truth_data
+                raise IndexError(f"data[0] and truth_data length mismatch: {len(data[0])} and {len(truth_data)}")
+            self.all_truth_data = np.array( truth_data )
         else:
             self.all_truth_data = np.zeros_like(self.all_t)
 
@@ -50,7 +51,6 @@ class SignalData(object):
         self.regenerate()
 
     def __len__(self):
-        # return len(self.t)
         return self.slice_end - self.slice_start
 
     def regenerate(self):
@@ -61,12 +61,14 @@ class SignalData(object):
         self.run_zd()
 
     def slice(self):
+        """Note that this affects computation as the preceding calculations aren't taken into account."""
         self.t = self.all_t[self.slice_start:self.slice_end]
         self.sig = self.all_sig[self.slice_start:self.slice_end]
         self.truth_data = self.all_truth_data[self.slice_start:self.slice_end]
 
     def run_amp(self):
-        self.sig_amp = [int(i * 2 ** 16) for i in self.sig]
+        self.sig_amp = ( self.sig * (2 ** self.amp_power) ).astype(int)
+        return self.sig_amp
 
     def run_fil(self):
         filtered = self.filter(self.sig_amp)
@@ -105,31 +107,14 @@ class SignalData(object):
         total_signals = np.sum(self.truth_data)
         total_triggers = np.sum(output_to_analyse)
 
-        hits = 0
-        for idx, val in enumerate(self.truth_data):
-            if not val:
-                continue
-            lower = max(self.slice_start, idx - tolerance_samples)
-            upper = min(idx + tolerance_samples, self.slice_end)
-            for search_idx in range(lower, upper):
-                if output_to_analyse[search_idx]:
-                    hits += 1
-                    break
-            else:
-                continue
-        hitrate = hits / total_signals
+        # Convert first two parameters to np.array as pandas.Series not compatible with numba
+        # Note typed.List is MUCH slower! Not sure why
+        hits, misfires = get_performance_compiled(output_to_analyse=output_to_analyse,
+                                                  truth_data=self.truth_data,
+                                                  tolerance_samples=tolerance_samples,
+                                                  )
 
-        misfires = 0
-        for idx, val in enumerate(output_to_analyse):
-            if not val:
-                continue
-            lower = max(self.slice_start, idx - tolerance_samples)
-            upper = min(idx + tolerance_samples, self.slice_end)
-            for search_idx in range(lower, upper):
-                if self.truth_data[search_idx]:
-                    break
-            else:
-                misfires += 1
+        hitrate = hits / total_signals
         misfire_rate = misfires / total_triggers
 
         if verbose:
@@ -169,15 +154,12 @@ class SignalData(object):
         if verbose: print("." * len(delay_samples_vals))
         for delay_samples in delay_samples_vals:
             self.delay_samples = delay_samples
-            # if verbose: print("." * len(inv_frac_vals) + f" {delay_samples}")
             for inv_frac in inv_frac_vals:
                 self.inv_frac = inv_frac
                 # Only run CFD and ZD, where self.regenerate() would also fun the amplifier and filter
                 self.run_cfd()
                 self.run_zd()
                 all_performances.append(self.get_current_performance(tolerance=self.tolerance))
-                # if verbose: print(".", end="")
-            # if verbose: print()
             if verbose: print(".", end="")
 
         if verbose:
