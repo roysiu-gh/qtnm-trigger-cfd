@@ -1,3 +1,4 @@
+import numpy as np
 import matplotlib.pyplot as plt
 from default_constants import DELAY_SAMPLES, FIGSIZE
 
@@ -86,5 +87,31 @@ def plot_misfires(df, title="untitled"):
     axis.set_ylabel("delay_samples")
     axis.set_zlabel("misfires")
     axis.plot_trisurf(x, y, df.misfires, cmap=cmap, linewidth=0.2)
+
+    return fig
+
+
+def plot_roc_curve(df, title="untitled"):
+    fig, axis = plt.subplots()
+    fig.suptitle(title)
+    axis.set_xlim(0, 1)
+    axis.set_ylim(0, 1.1)
+    # axis.set_xlabel("Specificity (TNR)")
+    axis.set_xlabel("Fall-out (FPR)")
+    axis.set_ylabel("Sensitivity (TPR)")
+
+    # delay_samples_vals = np.arange(0, 300, 25)
+    delay_samples_vals = np.sort( df.delay_samples.unique() )  # Iterate though the delay_samples with data in the df
+    df.sort_values(by=["specificity"], inplace=True)  # So that the plot lines are sensible
+    for delay_samples in delay_samples_vals:
+        filtered_df = df[df.delay_samples == delay_samples]
+        sensitivities = filtered_df.sensitivity
+        specificities = filtered_df.specificity
+        fallouts = 1 - specificities
+        # axis.plot(ds_TNRs, ds_TPRs, label=f"delay_samples: {delay_samples}")
+        axis.plot(fallouts, sensitivities, label=f"Delay Samples: {delay_samples}")
+
+    plt.legend()
+    plt.show()
 
     return fig

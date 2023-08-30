@@ -107,8 +107,12 @@ def zero_detector2(x_all):
 @jit(nopython=True)  # Numba can't parallelise
 def compare_data_to_success_condition(iterate_through, search_for, tolerance_samples):
     """Loop through iterate_through to count values against the success condition search_for
-    within tolerance_samples. Note for counting misfires this returns the complement."""
+    within tolerance_samples. Note for counting misfires this returns the complement.
+    If tolerance_samples passed as none, search whole slice (maximum tolerance).
+    """
     length = len(iterate_through)
+    if tolerance_samples is None:
+        tolerance_samples = length
 
     total = 0  # Already looping through list so probably faster than calling np.sum()
     successes = 0
@@ -148,15 +152,18 @@ def get_sensitivity_specificity_compiled_v1(trigger_output, truth_data, section_
         section_truth_data = truth_data[section_start : section_end]
 
         # The vars in the next line are ints, but treat as bools because only care if nonzero
-        signal_exists, triggered = compare_data_to_success_condition(section_output, section_truth_data,
-                                                                     tolerance_samples=tolerance_samples)
+        signal_exists, triggered_within_tolerance = compare_data_to_success_condition(
+            section_output, section_truth_data, tolerance_samples=tolerance_samples)
+
         if signal_exists:
             total_signals += 1
-            if triggered:
+            if triggered_within_tolerance:
                 total_true_pos += 1
         elif not signal_exists:
             total_nonsignals += 1
-            if not triggered:
+            # Need to see if triggered anywhere in slice, not just within the tolerance
+            triggered_at_all = np.sum(section_output)
+            if not triggered_at_all:
                 total_true_neg += 1
 
     if total_signals == 0:

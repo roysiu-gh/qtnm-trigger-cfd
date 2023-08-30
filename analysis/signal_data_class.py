@@ -2,7 +2,8 @@ import time
 import numpy as np
 
 from default_constants import *
-from algorithms import lp_filter, cfd, zero_detector2, human_time, compare_data_to_success_condition
+from algorithms import (lp_filter, cfd, zero_detector2, human_time,
+                        compare_data_to_success_condition, get_sensitivity_specificity_compiled_v1)
 
 
 class SignalData(object):
@@ -47,6 +48,7 @@ class SignalData(object):
         self.inv_frac = inv_frac
         self.amp_power = amp_power
         self.tolerance = tolerance
+        self.sampling_period = self.all_t[1] - self.all_t[0]  # Assumes constant sample time-spacing
 
         self.regenerate()
 
@@ -101,8 +103,7 @@ class SignalData(object):
 
         test_parameters = {}
 
-        spacing = self.all_t[1] - self.all_t[0]  # Assumes constant sample time-spacing
-        tolerance_samples = int(self.tolerance / spacing)
+        tolerance_samples = int(self.tolerance / self.sampling_period)
 
         total_signals, hits = compare_data_to_success_condition(output_to_analyse, self.truth_data,
                                                                 tolerance_samples=tolerance_samples)
@@ -157,6 +158,46 @@ class SignalData(object):
                 self.run_cfd()
                 self.run_zd()
                 all_performances.append(self.get_current_performance(tolerance=self.tolerance))
+            if verbose: print(".", end="")
+
+        if verbose:
+            end_wall = time.time()
+            end_cpu = time.process_time()
+            print()
+            print("Wall time:", human_time(end_wall - start_wall))
+            print("CPU time:", human_time(end_cpu - start_cpu))
+
+        return all_performances
+
+    def get_sensitivity_specificity_v1(self, tolerance=None):
+        self.tolerance = tolerance or self.tolerance
+
+        return get_sensitivity_specificity_compiled_v1(self.output, self.truth_data,
+                                                       section_time=SECTION_TIME,
+                                                       sampling_period=self.sampling_period,
+                                                       tolerance=self.tolerance, )
+
+    def get_roc_curve_data(self, inv_frac_vals, delay_samples_vals, tolerance=None, verbose=False):
+        self.tolerance = tolerance or self.tolerance
+        if verbose:
+            start_wall = time.time()
+            start_cpu = time.process_time()
+        all_performances = []
+
+        if verbose: print("." * len(delay_samples_vals))
+        for delay_samples in delay_samples_vals:
+            self.delay_samples = delay_samples
+            for inv_frac in inv_frac_vals:
+                self.inv_frac = inv_frac
+                # Only run CFD and ZD, where self.regenerate() would also fun the amplifier and filter
+                self.run_cfd()
+                self.run_zd()
+                sensitivity, specificity = self.get_sensitivity_specificity_v1(tolerance=self.tolerance)
+                all_performances.append({"sensitivity": sensitivity,
+                                         "specificity": specificity,
+                                         "inv_frac": inv_frac,
+                                         "delay_samples": delay_samples,
+                                         })
             if verbose: print(".", end="")
 
         if verbose:
