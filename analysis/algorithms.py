@@ -6,6 +6,9 @@ from numba import jit
 import pkg_resources
 
 __requires__ = "numpy==1.24"  # For numba
+
+from default_constants import TOLERANCE
+
 pkg_resources.require(__requires__)
 
 TIME_DURATION_UNITS = (
@@ -123,3 +126,47 @@ def compare_data_to_success_condition(iterate_through, search_for, tolerance_sam
             continue
 
     return total, successes
+
+
+@jit(nopython=True)  # Numba can't parallelise
+def get_sensitivity_specificity_compiled_v1(trigger_output, truth_data, section_time, sampling_period,
+                                            tolerance=TOLERANCE):
+    section_samples = int(section_time / sampling_period)
+    tolerance_samples = int(tolerance / sampling_period)
+
+    total_signals = 0
+    total_true_pos = 0
+    total_nonsignals = 0
+    total_true_neg = 0
+
+    section_samples = int(section_samples)
+    number_of_sections = divmod(len(trigger_output), section_samples)[0]
+    for section_number in range(number_of_sections):
+        section_start = section_number * section_samples
+        section_end = (section_number + 1) * section_samples
+        section_output = trigger_output[section_start : section_end]
+        section_truth_data = truth_data[section_start : section_end]
+
+        # The vars in the next line are ints, but treat as bools because only care if nonzero
+        signal_exists, triggered = compare_data_to_success_condition(section_output, section_truth_data,
+                                                                     tolerance_samples=tolerance_samples)
+        if signal_exists:
+            total_signals += 1
+            if triggered:
+                total_true_pos += 1
+        elif not signal_exists:
+            total_nonsignals += 1
+            if not triggered:
+                total_true_neg += 1
+
+    if total_signals == 0:
+        sensitivity = None
+    else:
+        sensitivity = total_true_pos / total_signals
+
+    if total_nonsignals == 0:
+        specificity = None
+    else:
+        specificity = total_true_neg / total_nonsignals
+
+    return sensitivity, specificity
