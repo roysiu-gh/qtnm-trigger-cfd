@@ -8,7 +8,8 @@ from algorithms import (lp_filter, cfd, zero_detector2, human_time,
 
 class SignalData(object):
     def __init__(self,
-                 data,
+                 time,
+                 signal,
                  truth_data=None,
 
                  filter_alg=lp_filter,
@@ -22,22 +23,24 @@ class SignalData(object):
                  inv_frac=INV_FRAC,
                  tolerance=TOLERANCE,
                  ):
-        self.all_t = np.array(data[0])
-        self.all_sig = np.array(data[1])
+        self.all_t = np.array(time)
+        self.all_sig = np.array(signal)
+        if len(time) != len(truth_data):
+            raise IndexError(f"time and signal length mismatch: {len(time)} and {len(signal)}")
 
         self.filter = filter_alg
         self.cfd = cfd_alg
         self.zd = zero_detector_alg
 
         if truth_data is not None:
-            if len(data[0]) != len(truth_data):
-                raise IndexError(f"data[0] and truth_data length mismatch: {len(data[0])} and {len(truth_data)}")
+            if len(time) != len(truth_data):
+                raise IndexError(f"signal and truth_data length mismatch: {len(signal)} and {len(truth_data)}")
             self.all_truth_data = np.array(truth_data)
         else:
             self.all_truth_data = np.zeros_like(self.all_t)
 
         if slice_end is None:
-            slice_end = len(data[0])
+            slice_end = len(time)
         self.slice_end = slice_end
 
         self.all_computed_performances = []
@@ -77,9 +80,12 @@ class SignalData(object):
         self.sig_fil = np.array(list(filtered))
         return self.sig_fil
 
-    def run_cfd(self):
+    def run_cfd(self):#!!!
+        # cfd_done = self.cfd(self.sig_fil, inv_frac=self.inv_frac, delay_samples=self.delay_samples, )
+        # self.sig_cfd = np.array(list(cfd_done))
         cfd_done = self.cfd(self.sig_fil, inv_frac=self.inv_frac, delay_samples=self.delay_samples, )
-        self.sig_cfd = np.array(list(cfd_done))
+        cfd_filt = self.filter(np.array(list(cfd_done)).astype(int))##### not convert int fsr???
+        self.sig_cfd = np.array(list(cfd_filt))
         return self.sig_cfd
 
     def run_zd(self):
@@ -112,8 +118,15 @@ class SignalData(object):
 
         misfires = total_triggers - misfires_complement
 
-        hitrate = hits / total_signals
-        misfire_rate = misfires / total_triggers
+        if total_signals == 0:
+            hitrate = None
+        else:
+            hitrate = hits / total_signals
+
+        if total_triggers == 0:
+            misfire_rate = None
+        else:
+            misfire_rate = misfires / total_triggers
 
         if verbose:
             print("self.delay_samples:", self.delay_samples)

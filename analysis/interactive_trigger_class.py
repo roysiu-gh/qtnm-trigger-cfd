@@ -9,7 +9,8 @@ from ipywidgets import interactive, Layout, IntSlider, FloatRangeSlider, FloatSl
 
 class InteractiveTrigger(SignalData):
     def __init__(self,
-                 data,
+                 time,
+                 signal,
                  title="untitled",
                  yscale="linear",
                  delay_samples=DELAY_SAMPLES,
@@ -18,7 +19,8 @@ class InteractiveTrigger(SignalData):
                  **kwargs,
                  ):
         super().__init__(
-            data=data,
+            time=time,
+            signal=signal,
             delay_samples=delay_samples,
             inv_frac=inv_frac,
             *args,
@@ -42,7 +44,7 @@ class InteractiveTrigger(SignalData):
         self.misfire_rate_text = Label()
 
         # Show triggers and truth data with graphics settings as in update(). Works by... logic.
-        self.update(delay_samples=None, inv_frac=None, view_range=None)
+        self.update(delay_samples=self.delay_samples, inv_frac=self.inv_frac, view_range=[0, view_range_max])
         # self.update(delay_samples=self.delay_samples, inv_frac=self.inv_frac, view_range=self.view_range)
 
         delay_samples_slider = IntSlider(min=0, max=300, step=10,
