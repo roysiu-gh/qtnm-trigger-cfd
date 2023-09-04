@@ -1,5 +1,6 @@
 import matplotlib.pyplot as plt
 
+from algorithms import cfd_normalised
 from default_constants import *
 from signal_data_class import SignalData
 
@@ -23,6 +24,7 @@ class InteractiveTrigger(SignalData):
             signal=signal,
             delay_samples=delay_samples,
             inv_frac=inv_frac,
+            cfd_alg=cfd_normalised,  # Use 'normalised' version for clearer plots
             *args,
             **kwargs,
         )
@@ -36,8 +38,10 @@ class InteractiveTrigger(SignalData):
         self.axis.set_xlim(self.view_range)
         self.axis.set_yscale(yscale)
         self.axis.plot(self.t, self.sig_amp, label="Amplifier output")
-        self.axis.plot(self.t, self.sig_fil, label="Filter output")
-        self.plt_cfd, = self.axis.plot(self.t, self.sig_cfd, label="CFD output")
+        self.axis.plot(self.t, self.sig_fil1, label="Filter output")
+        self.plt_cfd1, = self.axis.plot(self.t, self.sig_cfd1, label="CFD output 1")
+        self.plt_fil2, = self.axis.plot(self.t, self.sig_cfd2, label="LP filt 2")
+        self.plt_cfd2, = self.axis.plot(self.t, self.sig_cfd2, label="CFD output 2")
         self.plt_zer = self.axis.scatter(*self.get_nonzeros(self.output))
         self.plt_tru = self.axis.scatter(*self.get_nonzeros(self.truth_data))
 
@@ -63,6 +67,7 @@ class InteractiveTrigger(SignalData):
                                   delay_samples=delay_samples_slider,
                                   inv_frac=inv_frac_slider,
                                   view_range=view_range_slider,
+                                  continuous_update=False,
                                   )
 
     def get_nonzeros(self, series):
@@ -85,7 +90,9 @@ class InteractiveTrigger(SignalData):
             self.inv_frac = inv_frac or self.inv_frac
             self.delay_samples = delay_samples or self.delay_samples
 
-            self.run_cfd()
+            self.run_cfd1()
+            self.run_fil2()
+            self.run_cfd2()
             self.run_zd()
 
             test_parameters = self.get_current_performance()
@@ -94,7 +101,9 @@ class InteractiveTrigger(SignalData):
             self.hitrate_text.value = f"Hitrate: {hitrate}"
             self.misfire_rate_text.value = f"Misfire rate: {misfire_rate}"
 
-            self.plt_cfd.set_ydata(self.sig_cfd)
+            self.plt_cfd1.set_ydata(self.sig_cfd1)
+            self.plt_fil2.set_ydata(self.sig_fil2)
+            self.plt_cfd2.set_ydata(self.sig_cfd2)
             self.plt_zer.remove()
             self.plt_zer = self.axis.scatter(*self.get_nonzeros(self.output),
                                              label="ZD output", marker="x", color="purple", s=1000, zorder=3)

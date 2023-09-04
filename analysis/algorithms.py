@@ -50,6 +50,12 @@ def lp_filter_iir(x_all, DECAY_FULL_POWER=10, DECAY_PART=900):
         last_y = y
         yield y
 
+def lp_filter_iir_wrapper(DECAY_FULL_POWER=10, DECAY_PART=900):
+    """Return an instance of p_filter_iir() with DECAY_FULL_POWER and DECAY_PART preset."""
+    @jit(nopython=True)
+    def inner(x_all):
+        return lp_filter_iir(x_all, DECAY_FULL_POWER=DECAY_FULL_POWER, DECAY_PART=DECAY_PART)
+    return inner
 
 def sma(x_all, n=100):
     """Simple moving average filter
@@ -101,10 +107,16 @@ def cfd(x_all, inv_frac=3, delay_samples=100):
 
         # CFD calculation
         working = buffer[delay_samples - 1]  # Delay
-        working = - working * inv_frac  # Negate and augment (equivalent to attenuating x)
+        # Use of int() in following line just for casting, result SHOULD be int anyway (i.e. int() not in Verilog code)
+        working = int(- working * inv_frac)  # Negate and augment (equivalent to attenuating x)
         y = x + working
         yield y
 
+@jit(nopython=True)
+def cfd_normalised(x_all, inv_frac=3, delay_samples=100):
+    # Make smaller ('normalise') to fit on graph for InteractiveTrigger
+    for y in cfd(x_all, inv_frac, delay_samples):
+        yield int(y / inv_frac)  # Need to cast to int so that bit-shift (requires int) in lp_filter_iir() works
 
 @jit(nopython=True, parallel=True)
 def zero_detector(x_all):
@@ -158,8 +170,8 @@ def compare_data_to_success_condition(iterate_through, search_for, tolerance_sam
             if iterate_through[search_idx]:
                 successes += 1
                 break
-        else:
-            continue
+        # else:
+        #     continue
 
     return total, successes
 
@@ -175,7 +187,7 @@ def get_sensitivity_specificity_compiled_v1(trigger_output, truth_data, section_
     total_nonsignals = 0
     total_true_neg = 0
 
-    section_samples = int(section_samples)
+    # section_samples = int(section_samples)
     number_of_sections = divmod(len(trigger_output), section_samples)[0]
     for section_number in range(number_of_sections):
         section_start = section_number * section_samples
@@ -194,8 +206,10 @@ def get_sensitivity_specificity_compiled_v1(trigger_output, truth_data, section_
         elif not signal_exists:
             total_nonsignals += 1
             # Need to see if triggered anywhere in slice, not just within the tolerance
-            triggered_at_all = np.sum(section_output)
-            if not triggered_at_all:
+            # triggered_at_all = np.sum(section_output)
+            # if not triggered_at_all:
+            triggers_in_section = np.sum(section_output)
+            if triggers_in_section == 0:
                 total_true_neg += 1
 
     if total_signals == 0:

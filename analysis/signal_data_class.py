@@ -61,8 +61,10 @@ class SignalData(object):
     def regenerate(self):
         self.slice()
         self.run_amp()
-        self.run_fil()
-        self.run_cfd()
+        self.run_fil1()
+        self.run_cfd1()
+        self.run_fil2()##
+        self.run_cfd2()##
         self.run_zd()
 
     def slice(self):
@@ -75,22 +77,28 @@ class SignalData(object):
         self.sig_amp = (self.sig * (2 ** self.amp_power)).astype(int)
         return self.sig_amp
 
-    def run_fil(self):
+    def run_fil1(self):
         filtered = self.filter(self.sig_amp)
-        self.sig_fil = np.array(list(filtered))
-        return self.sig_fil
+        self.sig_fil1 = np.array(list(filtered))
+        return self.sig_fil1
 
-    def run_cfd(self):
-        cfd_done = self.cfd(self.sig_fil, inv_frac=self.inv_frac, delay_samples=self.delay_samples, )
-        self.sig_cfd = np.array(list(cfd_done))
-        # # Filter CFD output
-        # cfd_done = self.cfd(self.sig_fil, inv_frac=self.inv_frac, delay_samples=self.delay_samples, )
-        # cfd_filt = self.filter(np.array(list(cfd_done)).astype(int))##### not convert int fsr???
-        # self.sig_cfd = np.array(list(cfd_filt))
-        return self.sig_cfd
+    def run_cfd1(self):
+        cfd_done = self.cfd(self.sig_fil1, inv_frac=self.inv_frac, delay_samples=self.delay_samples, )
+        self.sig_cfd1 = np.array(list(cfd_done))
+        return self.sig_cfd1
+
+    def run_fil2(self):
+        filtered = self.filter(self.sig_cfd1)
+        self.sig_fil2 = np.array(list(filtered))
+        return self.sig_fil2
+
+    def run_cfd2(self):
+        cfd_done = self.cfd(self.sig_fil2, inv_frac=self.inv_frac, delay_samples=self.delay_samples, )
+        self.sig_cfd2 = np.array(list(cfd_done))
+        return self.sig_cfd2
 
     def run_zd(self):
-        zd_done = self.zd(self.sig_cfd)
+        zd_done = self.zd(self.sig_cfd2)
         self.output = np.array(list(zd_done))
         return self.output
 
@@ -168,8 +176,10 @@ class SignalData(object):
             self.delay_samples = delay_samples
             for inv_frac in inv_frac_vals:
                 self.inv_frac = inv_frac
-                # Only run CFD and ZD, where self.regenerate() would also fun the amplifier and filter
-                self.run_cfd()
+                # Only run CFD1, LP filter 2, CFD2, and ZD, where self.regenerate() would also run the amplifier and filter
+                self.run_cfd1()
+                self.run_fil2()
+                self.run_cfd2()
                 self.run_zd()
                 all_performances.append(self.get_current_performance(tolerance=self.tolerance))
             if verbose: print(".", end="")
@@ -193,6 +203,7 @@ class SignalData(object):
 
     def get_roc_curve_data(self, inv_frac_vals, delay_samples_vals, tolerance=None, verbose=False):
         self.tolerance = tolerance or self.tolerance
+        print(self.tolerance)
         if verbose:
             start_wall = time.time()
             start_cpu = time.process_time()
@@ -203,8 +214,10 @@ class SignalData(object):
             self.delay_samples = delay_samples
             for inv_frac in inv_frac_vals:
                 self.inv_frac = inv_frac
-                # Only run CFD and ZD, where self.regenerate() would also fun the amplifier and filter
-                self.run_cfd()
+                # Do manually, self.regenerate() would also run the amplifier and filter
+                self.run_cfd1()
+                self.run_fil2()
+                self.run_cfd2()
                 self.run_zd()
                 sensitivity, specificity = self.get_sensitivity_specificity_v1(tolerance=self.tolerance)
                 all_performances.append({"sensitivity": sensitivity,
