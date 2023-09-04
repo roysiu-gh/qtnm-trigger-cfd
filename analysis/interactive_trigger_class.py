@@ -91,8 +91,8 @@ class InteractiveTrigger(SignalData):
             test_parameters = self.get_current_performance()
             hitrate = test_parameters["hitrate"]
             misfire_rate = test_parameters["misfire_rate"]
-            self.hitrate_text.value = f"Hitrate: {hitrate:.3f}"
-            self.misfire_rate_text.value = f"Misfire rate: {misfire_rate:.3f}"
+            self.hitrate_text.value = f"Hitrate: {hitrate}"
+            self.misfire_rate_text.value = f"Misfire rate: {misfire_rate}"
 
             self.plt_cfd.set_ydata(self.sig_cfd)
             self.plt_zer.remove()
