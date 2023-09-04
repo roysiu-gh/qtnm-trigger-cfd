@@ -2,7 +2,7 @@ import time
 import numpy as np
 
 from default_constants import *
-from algorithms import (lp_filter, cfd, zero_detector2, human_time,
+from algorithms import (lp_filter_iir, cfd, zero_detector2, human_time,
                         compare_data_to_success_condition, get_sensitivity_specificity_compiled_v1)
 
 
@@ -12,7 +12,7 @@ class SignalData(object):
                  signal,
                  truth_data=None,
 
-                 filter_alg=lp_filter,
+                 filter_alg=lp_filter_iir,
                  cfd_alg=cfd,
                  zero_detector_alg=zero_detector2,
 
@@ -25,7 +25,7 @@ class SignalData(object):
                  ):
         self.all_t = np.array(time)
         self.all_sig = np.array(signal)
-        if len(time) != len(truth_data):
+        if len(time) != len(signal):
             raise IndexError(f"time and signal length mismatch: {len(time)} and {len(signal)}")
 
         self.filter = filter_alg
@@ -40,7 +40,7 @@ class SignalData(object):
             self.all_truth_data = np.zeros_like(self.all_t)
 
         if slice_end is None:
-            slice_end = len(time)
+            slice_end = len(time) - 1
         self.slice_end = slice_end
 
         self.all_computed_performances = []
@@ -80,12 +80,13 @@ class SignalData(object):
         self.sig_fil = np.array(list(filtered))
         return self.sig_fil
 
-    def run_cfd(self):#!!!
-        # cfd_done = self.cfd(self.sig_fil, inv_frac=self.inv_frac, delay_samples=self.delay_samples, )
-        # self.sig_cfd = np.array(list(cfd_done))
+    def run_cfd(self):
         cfd_done = self.cfd(self.sig_fil, inv_frac=self.inv_frac, delay_samples=self.delay_samples, )
-        cfd_filt = self.filter(np.array(list(cfd_done)).astype(int))##### not convert int fsr???
-        self.sig_cfd = np.array(list(cfd_filt))
+        self.sig_cfd = np.array(list(cfd_done))
+        # # Filter CFD output
+        # cfd_done = self.cfd(self.sig_fil, inv_frac=self.inv_frac, delay_samples=self.delay_samples, )
+        # cfd_filt = self.filter(np.array(list(cfd_done)).astype(int))##### not convert int fsr???
+        # self.sig_cfd = np.array(list(cfd_filt))
         return self.sig_cfd
 
     def run_zd(self):

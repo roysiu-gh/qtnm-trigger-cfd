@@ -26,8 +26,9 @@ class InteractiveTrigger(SignalData):
             *args,
             **kwargs,
         )
-        view_range_max = list(self.all_t)[-1]  # NB [-1] indexing does not work with pandas dataframe
-        self.view_range = [0, view_range_max]
+        view_range_min = self.all_t[self.slice_start]
+        view_range_max = self.all_t[self.slice_end]  # NB [-1] indexing does not work with pandas dataframe
+        self.view_range = [view_range_min, view_range_max]
 
         self.fig, self.axis = plt.subplots(figsize=FIGSIZE)
         self.fig.suptitle(title)
@@ -44,7 +45,7 @@ class InteractiveTrigger(SignalData):
         self.misfire_rate_text = Label()
 
         # Show triggers and truth data with graphics settings as in update(). Works by... logic.
-        self.update(delay_samples=self.delay_samples, inv_frac=self.inv_frac, view_range=[0, view_range_max])
+        self.update(delay_samples=None, inv_frac=None, view_range=None)
         # self.update(delay_samples=self.delay_samples, inv_frac=self.inv_frac, view_range=self.view_range)
 
         delay_samples_slider = IntSlider(min=0, max=300, step=10,

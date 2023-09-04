@@ -33,7 +33,7 @@ def human_time(seconds):
 
 
 @jit(nopython=True)
-def lp_filter(x_all, DECAY_FULL_POWER=10, DECAY_PART=900):
+def lp_filter_iir(x_all, DECAY_FULL_POWER=10, DECAY_PART=900):
     """ Low-pass IIR filter simulation of Verilog implementation
     Write as a generator to simulate verilog functionality
     Default DECAY_FULL_POWER = 10 so that DECAY_FULL = 1024
