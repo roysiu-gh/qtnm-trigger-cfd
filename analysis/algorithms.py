@@ -51,6 +51,38 @@ def lp_filter_iir(x_all, DECAY_FULL_POWER=10, DECAY_PART=900):
         yield y
 
 
+def sma(x_all, n=100):
+    """Simple moving average filter
+    `n` is window size in samples
+    """
+    return np.convolve(x_all, np.ones(n), "same") / n
+
+
+def wma_linear(x_all, n=100):
+    """(Linearly) weighted moving average filter
+    `n` is window size in samples
+    """
+    weights = np.arange(n)
+    sum = (n - 1) * n / 2  # n -> n-1
+    return np.convolve(x_all, weights, "same") / sum
+
+
+def ema(x_all, n=500, alpha=0.05):
+    """Exponentially weighted moving average filter
+    `n` is window size in samples, formula is e ** (alpha * x)
+    """
+    weights = np.exp(np.arange(0, alpha * n, alpha))
+    sum = np.sum(weights)
+    return np.convolve(x_all, weights, "same") / sum
+
+
+def ema_wrapper(n=500, alpha=0.05):
+    """Return an instance of ema() with n and alpha preset."""
+    def inner(x_all):
+        return ema(x_all, n=n, alpha=alpha)
+    return inner
+
+
 @jit(nopython=True)
 def cfd(x_all, inv_frac=3, delay_samples=100):
     """Simulation of the constant fraction discriminator (CFD) described in Verilog.
@@ -148,8 +180,8 @@ def get_sensitivity_specificity_compiled_v1(trigger_output, truth_data, section_
     for section_number in range(number_of_sections):
         section_start = section_number * section_samples
         section_end = (section_number + 1) * section_samples
-        section_output = trigger_output[section_start : section_end]
-        section_truth_data = truth_data[section_start : section_end]
+        section_output = trigger_output[section_start: section_end]
+        section_truth_data = truth_data[section_start: section_end]
 
         # The vars in the next line are ints, but treat as bools because only care if nonzero
         signal_exists, triggered_within_tolerance = compare_data_to_success_condition(
