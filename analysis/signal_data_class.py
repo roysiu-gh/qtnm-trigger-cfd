@@ -65,6 +65,7 @@ class SignalData(object):
         self.run_cfd1()
         self.run_fil2()##
         self.run_cfd2()##
+        self.run_fil3()##
         self.run_zd()
 
     def slice(self):
@@ -97,8 +98,13 @@ class SignalData(object):
         self.sig_cfd2 = np.array(list(cfd_done))
         return self.sig_cfd2
 
+    def run_fil3(self):
+        filtered = self.filter(self.sig_cfd2)
+        self.sig_fil3 = np.array(list(filtered))
+        return self.sig_fil3
+
     def run_zd(self):
-        zd_done = self.zd(self.sig_cfd2)
+        zd_done = self.zd(self.sig_fil3)
         self.output = np.array(list(zd_done))
         return self.output
 
@@ -180,6 +186,7 @@ class SignalData(object):
                 self.run_cfd1()
                 self.run_fil2()
                 self.run_cfd2()
+                self.run_fil3()
                 self.run_zd()
                 all_performances.append(self.get_current_performance(tolerance=self.tolerance))
             if verbose: print(".", end="")
@@ -218,6 +225,7 @@ class SignalData(object):
                 self.run_cfd1()
                 self.run_fil2()
                 self.run_cfd2()
+                self.run_fil3()
                 self.run_zd()
                 sensitivity, specificity = self.get_sensitivity_specificity_v1(tolerance=self.tolerance)
                 all_performances.append({"sensitivity": sensitivity,
