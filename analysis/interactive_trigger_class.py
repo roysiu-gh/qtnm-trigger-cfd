@@ -45,25 +45,28 @@ class InteractiveTrigger(SignalData):
                 nonzerodata.append(item)
         return times, nonzerodata
 
-    def update(self, delay_samples=None, inv_frac=None, view_range=None):
+    def update(self, decay_part=None, delay_samples=None, inv_frac=None, view_range=None):
         if view_range is not None:
             self.view_range = view_range
             self.axis.set_xlim(self.view_range)
 
-        if (inv_frac is not None) or (delay_samples is not None):
+        if (inv_frac is not None) or (decay_part is not None) or (delay_samples is not None):
             self.inv_frac = inv_frac
             self.delay_samples = delay_samples
+            self.decay_part = decay_part
 
-            self.run_cfd1()
-            self.run_fil2()
-            self.run_cfd2()
-            self.run_fil3()
-            self.run_zd()
+            # self.run_cfd1()
+            # self.run_fil2()
+            # self.run_cfd2()
+            # self.run_fil3()
+            # self.run_zd()
+            self.regenerate()
 
             test_parameters = self.get_current_performance()
             self.hitrate_text.value = f"Hitrate: { test_parameters['hitrate'] }"
             self.misfire_rate_text.value = f"Misfire rate: { test_parameters['misfire_rate'] }"
 
+            self.plt_fil1.set_ydata(self.sig_fil1)
             self.plt_cfd1.set_ydata(self.sig_cfd1)
             self.plt_fil2.set_ydata(self.sig_fil2)
             self.plt_cfd2.set_ydata(self.sig_cfd2)
@@ -85,7 +88,8 @@ class InteractiveTrigger(SignalData):
         self.axis.set_xlim(self.view_range)
         self.axis.set_yscale(self.yscale)
         self.axis.plot(self.t, self.sig_amp, label="Amplifier output")
-        self.axis.plot(self.t, self.sig_fil1, label="Filter output")
+        self.plt_fil1, = self.axis.plot(self.t, self.sig_fil1, label="LP filt 1")
+        # self.axis.plot(self.t, self.sig_fil1, label="Filter output")
         self.plt_cfd1, = self.axis.plot(self.t, self.sig_cfd1, label="CFD output 1")
         self.plt_fil2, = self.axis.plot(self.t, self.sig_fil2, label="LP filt 2")
         self.plt_cfd2, = self.axis.plot(self.t, self.sig_cfd2, label="CFD output 2")
@@ -95,6 +99,10 @@ class InteractiveTrigger(SignalData):
 
         self.hitrate_text = Label()
         self.misfire_rate_text = Label()
+
+        decay_part_slider = IntSlider(min=880, max=1024, step=12,
+                                         value=self.decay_part, description="Decay part / 1024",
+                                         layout=Layout(width="50%"), )
 
         delay_samples_slider = IntSlider(min=0, max=300, step=10,
                                          value=self.delay_samples, description="Delay samples",
@@ -108,6 +116,7 @@ class InteractiveTrigger(SignalData):
                                              )
 
         self.widget = interactive(self.update,
+                                  decay_part=decay_part_slider,
                                   delay_samples=delay_samples_slider,
                                   inv_frac=inv_frac_slider,
                                   view_range=view_range_slider,

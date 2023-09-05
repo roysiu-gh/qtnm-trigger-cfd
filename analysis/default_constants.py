@@ -1,3 +1,4 @@
+DECAY_PART = 900
 DELAY = 0.2
 FRACTION = 0.2
 SNR = 3  # Signal-to-noise ratio

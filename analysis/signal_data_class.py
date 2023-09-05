@@ -19,6 +19,7 @@ class SignalData(object):
                  slice_start=0,
                  slice_end=None,  # None sends the slice to the end
                  amp_power=16,
+                 decay_part=DECAY_PART,
                  delay_samples=DELAY_SAMPLES,
                  inv_frac=INV_FRAC,
                  tolerance=TOLERANCE,
@@ -47,6 +48,7 @@ class SignalData(object):
 
         self.slice_start = slice_start
         self.slice_end = slice_end
+        self.decay_part = decay_part
         self.delay_samples = delay_samples
         self.inv_frac = inv_frac
         self.amp_power = amp_power
@@ -79,7 +81,7 @@ class SignalData(object):
         return self.sig_amp
 
     def run_fil1(self):
-        filtered = self.filter(self.sig_amp)
+        filtered = self.filter(self.sig_amp, DECAY_PART=self.decay_part)
         self.sig_fil1 = np.array(list(filtered))
         return self.sig_fil1
 
@@ -89,7 +91,7 @@ class SignalData(object):
         return self.sig_cfd1
 
     def run_fil2(self):
-        filtered = self.filter(self.sig_cfd1)
+        filtered = self.filter(self.sig_cfd1, DECAY_PART=self.decay_part)
         self.sig_fil2 = np.array(list(filtered))
         return self.sig_fil2
 
@@ -99,11 +101,12 @@ class SignalData(object):
         return self.sig_cfd2
 
     def run_fil3(self):
-        filtered = self.filter(self.sig_cfd2)
+        filtered = self.filter(self.sig_cfd2, DECAY_PART=self.decay_part)
         self.sig_fil3 = np.array(list(filtered))
         return self.sig_fil3
 
     def run_zd(self):
+        # zd_done = self.zd(self.sig_fil3)
         zd_done = self.zd(self.sig_fil3)
         self.output = np.array(list(zd_done))
         return self.output
@@ -183,11 +186,12 @@ class SignalData(object):
             for inv_frac in inv_frac_vals:
                 self.inv_frac = inv_frac
                 # Only run CFD1, LP filter 2, CFD2, and ZD, where self.regenerate() would also run the amplifier and filter
-                self.run_cfd1()
-                self.run_fil2()
-                self.run_cfd2()
-                self.run_fil3()
-                self.run_zd()
+                # self.run_cfd1()
+                # self.run_fil2()
+                # # self.run_cfd2()
+                # # self.run_fil3()
+                # self.run_zd()
+                self.regenerate()
                 all_performances.append(self.get_current_performance(tolerance=self.tolerance))
             if verbose: print(".", end="")
 
