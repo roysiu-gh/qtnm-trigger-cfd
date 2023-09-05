@@ -52,8 +52,7 @@ def lp_filter_iir(x_all, DECAY_FULL_POWER=10, DECAY_PART=900):
 
 
 def lp_filter_iir_extracted(x_all, **kwargs):
-    """ A wrapper for lp_filter_iir() as Numba doesn't support the **kwargs construct.
-    Ignore irrelevant arguments.
+    """ A wrapper for lp_filter_iir() as Numba doesn't support the **kwargs construct. Ignore irrelevant arguments.
     """
     relevant_kwargs = {}
     if "DECAY_FULL_POWER" in kwargs:
@@ -64,43 +63,73 @@ def lp_filter_iir_extracted(x_all, **kwargs):
     for y in lp_filter_iir(x_all, **relevant_kwargs):
         yield y
 
-def lp_filter_iir_wrapper(DECAY_FULL_POWER=10, DECAY_PART=900):
-    """Return an instance of lp_filter_iir() with DECAY_FULL_POWER and DECAY_PART preset."""
-    @jit(nopython=True)
-    def inner(x_all):
-        return lp_filter_iir(x_all, DECAY_FULL_POWER=DECAY_FULL_POWER, DECAY_PART=DECAY_PART)
-    return inner
+# def lp_filter_iir_wrapper(DECAY_FULL_POWER=10, DECAY_PART=900):
+#     """Return an instance of lp_filter_iir() with DECAY_FULL_POWER and DECAY_PART preset."""
+#     @jit(nopython=True)
+#     def inner(x_all):
+#         return lp_filter_iir(x_all, DECAY_FULL_POWER=DECAY_FULL_POWER, DECAY_PART=DECAY_PART)
+#     return inner
 
-def sma(x_all, n=100, *args, **kwargs):
-    """Simple moving average filter
-    `n` is window size in samples
+def sma_convolve(x_all, window_width=100, *args, **kwargs):
+    """Simple moving average filter using convolution, NOT Verilog implementation.
+    `window_width` is window size in samples
     """
-    return np.convolve(x_all, np.ones(n), "same") / n
+    return np.convolve(x_all, np.ones(window_width), "same") / window_width
 
 
-def wma_linear(x_all, n=100):
+def sma_convolve_extracted(x_all, **kwargs):
+    """ A wrapper for sma_convolve() as Numba doesn't support the **kwargs construct. Ignore irrelevant arguments.
+    """
+    relevant_kwargs = {}
+    if "window_width" in kwargs:
+        relevant_kwargs["window_width"] = kwargs["window_width"]
+
+    for y in sma_convolve(x_all, **relevant_kwargs):
+        yield y
+
+def wma_linear_convolve(x_all, window_width=100):
     """(Linearly) weighted moving average filter
     `n` is window size in samples
     """
-    weights = np.arange(n)
-    sum = (n - 1) * n / 2  # n -> n-1
+    weights = np.arange(window_width)
+    sum = (window_width - 1) * window_width / 2  # n -> n-1
     return np.convolve(x_all, weights, "same") / sum
 
+def wma_linear_convolve_extracted(x_all, **kwargs):
+    """ A wrapper for sma_convolve() as Numba doesn't support the **kwargs construct. Ignore irrelevant arguments.
+    """
+    relevant_kwargs = {}
+    if "window_width" in kwargs:
+        relevant_kwargs["window_width"] = kwargs["window_width"]
 
-def ema(x_all, n=500, alpha=0.05):
+    for y in wma_linear_convolve(x_all, **relevant_kwargs):
+        yield y
+
+def ema_convolve(x_all, window_width=500, alpha=0.05):
     """Exponentially weighted moving average filter
     `n` is window size in samples, formula is e ** (alpha * x)
     """
-    weights = np.exp(np.arange(0, alpha * n, alpha))
+    weights = np.exp(np.arange(0, alpha * window_width, alpha))
     sum = np.sum(weights)
     return np.convolve(x_all, weights, "same") / sum
 
+def ema_convolve_extracted(x_all, **kwargs):
+    """ A wrapper for sma_convolve() as Numba doesn't support the **kwargs construct. Ignore irrelevant arguments.
+    """
+    relevant_kwargs = {}
+    if "window_width" in kwargs:
+        relevant_kwargs["window_width"] = kwargs["window_width"]
+    if "alpha" in kwargs:
+        relevant_kwargs["alpha"] = kwargs["alpha"]
 
-def ema_wrapper(n=500, alpha=0.05):
-    """Return an instance of ema() with n and alpha preset."""
-    def inner(x_all):
-        return ema(x_all, n=n, alpha=alpha)
-    return inner
+    for y in ema_convolve(x_all, **relevant_kwargs):
+        yield y
+
+# def ema_wrapper(n=500, alpha=0.05):
+#     """Return an instance of ema() with n and alpha preset."""
+#     def inner(x_all):
+#         return ema(x_all, n=n, alpha=alpha)
+#     return inner
 
 
 @jit(nopython=True)

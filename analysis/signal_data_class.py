@@ -22,6 +22,7 @@ class SignalData(object):
                  filter_alg_args={
                      "DECAY_PART": DECAY_PART,
                      "window_width": WINDOW_WIDTH,
+                     "alpha": ALPHA,
                  },
                  # decay_part=DECAY_PART,
                  delay_samples=DELAY_SAMPLES,

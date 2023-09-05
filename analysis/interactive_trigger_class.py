@@ -45,7 +45,7 @@ class InteractiveTrigger(SignalData):
                 nonzerodata.append(item)
         return times, nonzerodata
 
-    def update(self, decay_part, window_width, delay_samples, inv_frac, view_range):
+    def update(self, decay_part, window_width, alpha, delay_samples, inv_frac, view_range):
         if view_range != self.view_range:
             self.view_range = view_range
             self.axis.set_xlim(self.view_range)
@@ -55,6 +55,8 @@ class InteractiveTrigger(SignalData):
             self.filter_alg_args["DECAY_PART"] = decay_part
         if window_width != self.filter_alg_args["window_width"]:
             self.filter_alg_args["window_width"] = window_width
+        if alpha != self.filter_alg_args["alpha"]:
+            self.filter_alg_args["alpha"] = alpha
         if inv_frac != self.inv_frac:
             self.inv_frac = inv_frac
         if delay_samples != self.delay_samples:
@@ -63,8 +65,8 @@ class InteractiveTrigger(SignalData):
         self.regenerate()
 
         test_parameters = self.get_current_performance()
-        self.hitrate_text.value = f"Hitrate: { test_parameters['hitrate'] }"
-        self.misfire_rate_text.value = f"Misfire rate: { test_parameters['misfire_rate'] }"
+        self.hitrate_text.value = f"Hitrate: {test_parameters['hitrate']}"
+        self.misfire_rate_text.value = f"Misfire rate: {test_parameters['misfire_rate']}"
 
         self.plt_fil1.set_ydata(self.sig_fil1)
         self.plt_cfd1.set_ydata(self.sig_cfd1)
@@ -101,11 +103,14 @@ class InteractiveTrigger(SignalData):
         self.misfire_rate_text = Label()
 
         decay_part_slider = IntSlider(min=880, max=1024, step=12,
-                                         value=self.filter_alg_args["DECAY_PART"], description="Decay part / 1024",
-                                         layout=Layout(width="50%"), )
-        window_width_slider = IntSlider(min=0, max=1000, step=10,
-                                         value=self.filter_alg_args["window_width"], description="Window Width",
-                                         layout=Layout(width="50%"), )
+                                      value=self.filter_alg_args["DECAY_PART"], description="Decay part / 1024",
+                                      layout=Layout(width="50%"), )
+        window_width_slider = IntSlider(min=5, max=200, step=5,
+                                        value=self.filter_alg_args["window_width"], description="Window Width",
+                                        layout=Layout(width="50%"), )
+        alpha_slider = FloatSlider(min=0, max=0.15, step=0.001,
+                                   value=self.filter_alg_args["alpha"], description="Alpha (for EMA)",
+                                   layout=Layout(width="95%"), )
 
         delay_samples_slider = IntSlider(min=0, max=300, step=10,
                                          value=self.delay_samples, description="Delay samples",
@@ -120,6 +125,7 @@ class InteractiveTrigger(SignalData):
         self.widget = interactive(self.update,
                                   decay_part=decay_part_slider,
                                   window_width=window_width_slider,
+                                  alpha=alpha_slider,
                                   delay_samples=delay_samples_slider,
                                   inv_frac=inv_frac_slider,
                                   view_range=view_range_slider,
@@ -127,10 +133,11 @@ class InteractiveTrigger(SignalData):
                                   )
 
         # Initialise
-        self.update(decay_part = self.filter_alg_args["DECAY_PART"],
-                    window_width = self.filter_alg_args["window_width"],
-                    delay_samples = self.delay_samples,
-                    inv_frac = self.inv_frac,
-                    view_range = self.view_range,
+        self.update(decay_part=self.filter_alg_args["DECAY_PART"],
+                    window_width=self.filter_alg_args["window_width"],
+                    alpha=self.filter_alg_args["alpha"],
+                    delay_samples=self.delay_samples,
+                    inv_frac=self.inv_frac,
+                    view_range=self.view_range,
                     )
         display(self.hitrate_text, self.misfire_rate_text, self.widget)
