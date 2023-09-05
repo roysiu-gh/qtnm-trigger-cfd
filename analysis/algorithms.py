@@ -50,14 +50,28 @@ def lp_filter_iir(x_all, DECAY_FULL_POWER=10, DECAY_PART=900):
         last_y = y
         yield y
 
+
+def lp_filter_iir_extracted(x_all, **kwargs):
+    """ A wrapper for lp_filter_iir() as Numba doesn't support the **kwargs construct.
+    Ignore irrelevant arguments.
+    """
+    relevant_kwargs = {}
+    if "DECAY_FULL_POWER" in kwargs:
+        relevant_kwargs["DECAY_FULL_POWER"] = kwargs["DECAY_FULL_POWER"]
+    if "DECAY_PART" in kwargs:
+        relevant_kwargs["DECAY_PART"] = kwargs["DECAY_PART"]
+
+    for y in lp_filter_iir(x_all, **relevant_kwargs):
+        yield y
+
 def lp_filter_iir_wrapper(DECAY_FULL_POWER=10, DECAY_PART=900):
-    """Return an instance of p_filter_iir() with DECAY_FULL_POWER and DECAY_PART preset."""
+    """Return an instance of lp_filter_iir() with DECAY_FULL_POWER and DECAY_PART preset."""
     @jit(nopython=True)
     def inner(x_all):
         return lp_filter_iir(x_all, DECAY_FULL_POWER=DECAY_FULL_POWER, DECAY_PART=DECAY_PART)
     return inner
 
-def sma(x_all, n=100):
+def sma(x_all, n=100, *args, **kwargs):
     """Simple moving average filter
     `n` is window size in samples
     """

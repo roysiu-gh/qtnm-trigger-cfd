@@ -45,39 +45,39 @@ class InteractiveTrigger(SignalData):
                 nonzerodata.append(item)
         return times, nonzerodata
 
-    def update(self, decay_part=None, delay_samples=None, inv_frac=None, view_range=None):
-        if view_range is not None:
+    def update(self, decay_part, window_width, delay_samples, inv_frac, view_range):
+        if view_range != self.view_range:
             self.view_range = view_range
             self.axis.set_xlim(self.view_range)
+            return None  # To skip rest of computation
 
-        if (inv_frac is not None) or (decay_part is not None) or (delay_samples is not None):
+        if decay_part != self.filter_alg_args["DECAY_PART"]:
+            self.filter_alg_args["DECAY_PART"] = decay_part
+        if window_width != self.filter_alg_args["window_width"]:
+            self.filter_alg_args["window_width"] = window_width
+        if inv_frac != self.inv_frac:
             self.inv_frac = inv_frac
+        if delay_samples != self.delay_samples:
             self.delay_samples = delay_samples
-            self.decay_part = decay_part
 
-            # self.run_cfd1()
-            # self.run_fil2()
-            # self.run_cfd2()
-            # self.run_fil3()
-            # self.run_zd()
-            self.regenerate()
+        self.regenerate()
 
-            test_parameters = self.get_current_performance()
-            self.hitrate_text.value = f"Hitrate: { test_parameters['hitrate'] }"
-            self.misfire_rate_text.value = f"Misfire rate: { test_parameters['misfire_rate'] }"
+        test_parameters = self.get_current_performance()
+        self.hitrate_text.value = f"Hitrate: { test_parameters['hitrate'] }"
+        self.misfire_rate_text.value = f"Misfire rate: { test_parameters['misfire_rate'] }"
 
-            self.plt_fil1.set_ydata(self.sig_fil1)
-            self.plt_cfd1.set_ydata(self.sig_cfd1)
-            self.plt_fil2.set_ydata(self.sig_fil2)
-            self.plt_cfd2.set_ydata(self.sig_cfd2)
-            self.plt_fil3.set_ydata(self.sig_fil3)
-            self.plt_zer.remove()
-            self.plt_zer = self.axis.scatter(*self.get_nonzeros(self.output),
-                                             label="ZD output", marker="x", color="purple", s=1000, zorder=3)
-            self.plt_tru.remove()
-            self.plt_tru = self.axis.errorbar(*self.get_nonzeros(self.truth_data), xerr=self.tolerance,
-                                              fmt="|", capsize=25, markeredgewidth=2,
-                                              label="Truth data", color="yellow", zorder=4)
+        self.plt_fil1.set_ydata(self.sig_fil1)
+        self.plt_cfd1.set_ydata(self.sig_cfd1)
+        self.plt_fil2.set_ydata(self.sig_fil2)
+        # self.plt_cfd2.set_ydata(self.sig_cfd2)
+        # self.plt_fil3.set_ydata(self.sig_fil3)
+        self.plt_zer.remove()
+        self.plt_zer = self.axis.scatter(*self.get_nonzeros(self.output),
+                                         label="ZD output", marker="x", color="purple", s=1000, zorder=3)
+        self.plt_tru.remove()
+        self.plt_tru = self.axis.errorbar(*self.get_nonzeros(self.truth_data), xerr=self.tolerance,
+                                          fmt="|", capsize=25, markeredgewidth=2,
+                                          label="Truth data", color="yellow", zorder=4)
 
         plt.legend(loc="upper right")
 
@@ -92,8 +92,8 @@ class InteractiveTrigger(SignalData):
         # self.axis.plot(self.t, self.sig_fil1, label="Filter output")
         self.plt_cfd1, = self.axis.plot(self.t, self.sig_cfd1, label="CFD output 1")
         self.plt_fil2, = self.axis.plot(self.t, self.sig_fil2, label="LP filt 2")
-        self.plt_cfd2, = self.axis.plot(self.t, self.sig_cfd2, label="CFD output 2")
-        self.plt_fil3, = self.axis.plot(self.t, self.sig_fil3, label="LP filt 3")
+        # self.plt_cfd2, = self.axis.plot(self.t, self.sig_cfd2, label="CFD output 2")
+        # self.plt_fil3, = self.axis.plot(self.t, self.sig_fil3, label="LP filt 3")
         self.plt_zer = self.axis.scatter(*self.get_nonzeros(self.output))
         self.plt_tru = self.axis.scatter(*self.get_nonzeros(self.truth_data))
 
@@ -101,7 +101,10 @@ class InteractiveTrigger(SignalData):
         self.misfire_rate_text = Label()
 
         decay_part_slider = IntSlider(min=880, max=1024, step=12,
-                                         value=self.decay_part, description="Decay part / 1024",
+                                         value=self.filter_alg_args["DECAY_PART"], description="Decay part / 1024",
+                                         layout=Layout(width="50%"), )
+        window_width_slider = IntSlider(min=0, max=1000, step=10,
+                                         value=self.filter_alg_args["window_width"], description="Window Width",
                                          layout=Layout(width="50%"), )
 
         delay_samples_slider = IntSlider(min=0, max=300, step=10,
@@ -112,17 +115,22 @@ class InteractiveTrigger(SignalData):
                                       layout=Layout(width="50%"), )
         view_range_slider = FloatRangeSlider(min=self.view_range[0], max=self.view_range[1], step=10e-6,
                                              value=self.view_range, description="View range",
-                                             layout=Layout(width="95%"),
-                                             )
+                                             layout=Layout(width="95%"), )
 
         self.widget = interactive(self.update,
                                   decay_part=decay_part_slider,
+                                  window_width=window_width_slider,
                                   delay_samples=delay_samples_slider,
                                   inv_frac=inv_frac_slider,
                                   view_range=view_range_slider,
                                   continuous_update=False,
                                   )
 
-        # Show triggers and truth data with graphics settings as in update(). Works by... logic.
-        self.update(delay_samples=None, inv_frac=None, view_range=None)
+        # Initialise
+        self.update(decay_part = self.filter_alg_args["DECAY_PART"],
+                    window_width = self.filter_alg_args["window_width"],
+                    delay_samples = self.delay_samples,
+                    inv_frac = self.inv_frac,
+                    view_range = self.view_range,
+                    )
         display(self.hitrate_text, self.misfire_rate_text, self.widget)

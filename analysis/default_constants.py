@@ -1,4 +1,5 @@
 DECAY_PART = 900
+WINDOW_WIDTH=100
 DELAY = 0.2
 FRACTION = 0.2
 SNR = 3  # Signal-to-noise ratio

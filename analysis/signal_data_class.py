@@ -2,8 +2,7 @@ import time
 import numpy as np
 
 from default_constants import *
-from algorithms import (lp_filter_iir, cfd, zero_detector2, human_time,
-                        compare_data_to_success_condition, get_sensitivity_specificity_compiled_v1)
+from algorithms import *
 
 
 class SignalData(object):
@@ -12,14 +11,19 @@ class SignalData(object):
                  signal,
                  truth_data=None,
 
-                 filter_alg=lp_filter_iir,
+                 # filter_alg=lp_filter_iir,
+                 filter_alg=lp_filter_iir_extracted,
                  cfd_alg=cfd,
                  zero_detector_alg=zero_detector2,
 
                  slice_start=0,
                  slice_end=None,  # None sends the slice to the end
                  amp_power=16,
-                 decay_part=DECAY_PART,
+                 filter_alg_args={
+                     "DECAY_PART": DECAY_PART,
+                     "window_width": WINDOW_WIDTH,
+                 },
+                 # decay_part=DECAY_PART,
                  delay_samples=DELAY_SAMPLES,
                  inv_frac=INV_FRAC,
                  tolerance=TOLERANCE,
@@ -48,7 +52,9 @@ class SignalData(object):
 
         self.slice_start = slice_start
         self.slice_end = slice_end
-        self.decay_part = decay_part
+
+        self.filter_alg_args = filter_alg_args
+        # self.decay_part = decay_part
         self.delay_samples = delay_samples
         self.inv_frac = inv_frac
         self.amp_power = amp_power
@@ -65,9 +71,9 @@ class SignalData(object):
         self.run_amp()
         self.run_fil1()
         self.run_cfd1()
-        self.run_fil2()##
-        self.run_cfd2()##
-        self.run_fil3()##
+        self.run_fil2()  ##
+        # self.run_cfd2()##
+        # self.run_fil3()##
         self.run_zd()
 
     def slice(self):
@@ -81,7 +87,7 @@ class SignalData(object):
         return self.sig_amp
 
     def run_fil1(self):
-        filtered = self.filter(self.sig_amp, DECAY_PART=self.decay_part)
+        filtered = self.filter(self.sig_amp, **self.filter_alg_args)
         self.sig_fil1 = np.array(list(filtered))
         return self.sig_fil1
 
@@ -91,23 +97,23 @@ class SignalData(object):
         return self.sig_cfd1
 
     def run_fil2(self):
-        filtered = self.filter(self.sig_cfd1, DECAY_PART=self.decay_part)
+        filtered = self.filter(self.sig_cfd1, **self.filter_alg_args)
         self.sig_fil2 = np.array(list(filtered))
         return self.sig_fil2
 
-    def run_cfd2(self):
-        cfd_done = self.cfd(self.sig_fil2, inv_frac=self.inv_frac, delay_samples=self.delay_samples, )
-        self.sig_cfd2 = np.array(list(cfd_done))
-        return self.sig_cfd2
-
-    def run_fil3(self):
-        filtered = self.filter(self.sig_cfd2, DECAY_PART=self.decay_part)
-        self.sig_fil3 = np.array(list(filtered))
-        return self.sig_fil3
+    # def run_cfd2(self):
+    #     cfd_done = self.cfd(self.sig_fil2, inv_frac=self.inv_frac, delay_samples=self.delay_samples, )
+    #     self.sig_cfd2 = np.array(list(cfd_done))
+    #     return self.sig_cfd2
+    #
+    # def run_fil3(self):
+    #     filtered = self.filter(self.sig_cfd2, DECAY_PART=self.decay_part)
+    #     self.sig_fil3 = np.array(list(filtered))
+    #     return self.sig_fil3
 
     def run_zd(self):
         # zd_done = self.zd(self.sig_fil3)
-        zd_done = self.zd(self.sig_fil3)
+        zd_done = self.zd(self.sig_fil2)
         self.output = np.array(list(zd_done))
         return self.output
 
@@ -225,12 +231,13 @@ class SignalData(object):
             self.delay_samples = delay_samples
             for inv_frac in inv_frac_vals:
                 self.inv_frac = inv_frac
-                # Do manually, self.regenerate() would also run the amplifier and filter
-                self.run_cfd1()
-                self.run_fil2()
-                self.run_cfd2()
-                self.run_fil3()
-                self.run_zd()
+                # # Do manually, self.regenerate() would also run the amplifier and filter
+                # self.run_cfd1()
+                # self.run_fil2()
+                # self.run_cfd2()
+                # self.run_fil3()
+                # self.run_zd()
+                self.regenerate()
                 sensitivity, specificity = self.get_sensitivity_specificity_v1(tolerance=self.tolerance)
                 all_performances.append({"sensitivity": sensitivity,
                                          "specificity": specificity,
