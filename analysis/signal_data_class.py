@@ -15,6 +15,7 @@ class SignalData(object):
                  filter_alg=lp_filter_iir_extracted,
                  cfd_alg=cfd,
                  zero_detector_alg=zero_detector2,
+                 run_discriminator_twice=False,
 
                  slice_start=0,
                  slice_end=None,  # None sends the slice to the end
@@ -37,6 +38,7 @@ class SignalData(object):
         self.filter = filter_alg
         self.cfd = cfd_alg
         self.zd = zero_detector_alg
+        self.run_discriminator_twice = run_discriminator_twice
 
         if truth_data is not None:
             if len(time) != len(truth_data):
@@ -72,9 +74,10 @@ class SignalData(object):
         self.run_amp()
         self.run_fil1()
         self.run_cfd1()
-        self.run_fil2()  ##
-        # self.run_cfd2()##
-        # self.run_fil3()##
+        self.run_fil2()
+        if self.run_discriminator_twice:
+            self.run_cfd2()###
+            self.run_fil3()###
         self.run_zd()
 
     def slice(self):
@@ -102,19 +105,21 @@ class SignalData(object):
         self.sig_fil2 = np.array(list(filtered))
         return self.sig_fil2
 
-    # def run_cfd2(self):
-    #     cfd_done = self.cfd(self.sig_fil2, inv_frac=self.inv_frac, delay_samples=self.delay_samples, )
-    #     self.sig_cfd2 = np.array(list(cfd_done))
-    #     return self.sig_cfd2
-    #
-    # def run_fil3(self):
-    #     filtered = self.filter(self.sig_cfd2, DECAY_PART=self.decay_part)
-    #     self.sig_fil3 = np.array(list(filtered))
-    #     return self.sig_fil3
+    def run_cfd2(self):
+        cfd_done = self.cfd(self.sig_fil2, inv_frac=self.inv_frac, delay_samples=self.delay_samples, )
+        self.sig_cfd2 = np.array(list(cfd_done))
+        return self.sig_cfd2
+
+    def run_fil3(self):
+        filtered = self.filter(self.sig_cfd2, **self.filter_alg_args)
+        self.sig_fil3 = np.array(list(filtered))
+        return self.sig_fil3
 
     def run_zd(self):
-        # zd_done = self.zd(self.sig_fil3)
-        zd_done = self.zd(self.sig_fil2)
+        if self.run_discriminator_twice:
+            zd_done = self.zd(self.sig_fil3)
+        else:
+            zd_done = self.zd(self.sig_fil2)
         self.output = np.array(list(zd_done))
         return self.output
 

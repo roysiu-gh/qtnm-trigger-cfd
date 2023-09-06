@@ -161,6 +161,11 @@ def cfd_normalised(x_all, inv_frac=3, delay_samples=100):
     for y in cfd(x_all, inv_frac, delay_samples):
         yield int(y / inv_frac)  # Need to cast to int so that bit-shift (requires int) in lp_filter_iir() works
 
+
+def diff(x_all, *args, **kwargs):
+    return np.pad( np.diff(x_all), (0, 1) ) * 10
+
+
 @jit(nopython=True, parallel=True)
 def zero_detector(x_all):
     sign = 0

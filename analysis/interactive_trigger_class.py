@@ -72,8 +72,9 @@ class InteractiveTrigger(SignalData):
         self.plt_fil1.set_ydata(self.sig_fil1)
         self.plt_cfd1.set_ydata(self.sig_cfd1)
         self.plt_fil2.set_ydata(self.sig_fil2)
-        # self.plt_cfd2.set_ydata(self.sig_cfd2)
-        # self.plt_fil3.set_ydata(self.sig_fil3)
+        if self.run_discriminator_twice:
+            self.plt_cfd2.set_ydata(self.sig_cfd2)###
+            self.plt_fil3.set_ydata(self.sig_fil3)###
         self.plt_zer.remove()
         self.plt_zer = self.axis.scatter(*self.get_nonzeros(self.output),
                                          label="ZD output", marker="x", color="purple", s=1000, zorder=3)
@@ -92,11 +93,11 @@ class InteractiveTrigger(SignalData):
         self.axis.set_yscale(self.yscale)
         self.axis.plot(self.t, self.sig_amp, label="Amplifier output")
         self.plt_fil1, = self.axis.plot(self.t, self.sig_fil1, label="LP filt 1")
-        # self.axis.plot(self.t, self.sig_fil1, label="Filter output")
         self.plt_cfd1, = self.axis.plot(self.t, self.sig_cfd1, label="CFD output 1")
         self.plt_fil2, = self.axis.plot(self.t, self.sig_fil2, label="LP filt 2")
-        # self.plt_cfd2, = self.axis.plot(self.t, self.sig_cfd2, label="CFD output 2")
-        # self.plt_fil3, = self.axis.plot(self.t, self.sig_fil3, label="LP filt 3")
+        if self.run_discriminator_twice:
+            self.plt_cfd2, = self.axis.plot(self.t, self.sig_cfd2, label="CFD output 2")###
+            self.plt_fil3, = self.axis.plot(self.t, self.sig_fil3, label="LP filt 3")###
         self.plt_zer = self.axis.scatter(*self.get_nonzeros(self.output))
         self.plt_tru = self.axis.scatter(*self.get_nonzeros(self.truth_data))
 
@@ -106,9 +107,9 @@ class InteractiveTrigger(SignalData):
         decay_part_slider = IntSlider(min=880, max=1024, step=12,
                                       value=self.filter_alg_args["DECAY_PART"], description="Decay part / 1024",
                                       layout=Layout(width="50%"), )
-        window_width_slider = IntSlider(min=5, max=200, step=5,
+        window_width_slider = IntSlider(min=5, max=300, step=5,
                                         value=self.filter_alg_args["window_width"], description="Window Width",
-                                        layout=Layout(width="50%"), )
+                                        layout=Layout(width="75%"), )
         alpha_slider = FloatSlider(min=0, max=0.15, step=0.001,
                                    value=self.filter_alg_args["alpha"], description="Alpha (for EMA)",
                                    layout=Layout(width="95%"), )
