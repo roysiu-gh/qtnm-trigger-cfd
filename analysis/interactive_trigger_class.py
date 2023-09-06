@@ -16,6 +16,7 @@ class InteractiveTrigger(SignalData):
                  yscale="linear",
                  delay_samples=DELAY_SAMPLES,
                  inv_frac=INV_FRAC,
+                 cfd_alg=cfd_normalised,  # Use 'normalised' version for clearer plots
                  *args,
                  **kwargs,
                  ):
@@ -24,7 +25,7 @@ class InteractiveTrigger(SignalData):
             signal=signal,
             delay_samples=delay_samples,
             inv_frac=inv_frac,
-            cfd_alg=cfd_normalised,  # Use 'normalised' version for clearer plots
+            cfd_alg=cfd_alg,
             *args,
             **kwargs,
         )
