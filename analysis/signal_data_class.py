@@ -226,8 +226,8 @@ class SignalData(object):
 
     def get_roc_curve_data(self, inv_frac_vals, delay_samples_vals, tolerance=None, verbose=False):
         self.tolerance = tolerance or self.tolerance
-        print(self.tolerance)
         if verbose:
+            print(self.tolerance)
             start_wall = time.time()
             start_cpu = time.process_time()
         all_performances = []

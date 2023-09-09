@@ -63,12 +63,12 @@ def lp_filter_iir_extracted(x_all, **kwargs):
     for y in lp_filter_iir(x_all, **relevant_kwargs):
         yield y
 
-# def lp_filter_iir_wrapper(DECAY_FULL_POWER=10, DECAY_PART=900):
-#     """Return an instance of lp_filter_iir() with DECAY_FULL_POWER and DECAY_PART preset."""
-#     @jit(nopython=True)
-#     def inner(x_all):
-#         return lp_filter_iir(x_all, DECAY_FULL_POWER=DECAY_FULL_POWER, DECAY_PART=DECAY_PART)
-#     return inner
+def lp_filter_iir_wrapper(DECAY_FULL_POWER=10, DECAY_PART=900):
+    """Return an instance of lp_filter_iir() with DECAY_FULL_POWER and DECAY_PART preset."""
+    @jit(nopython=True)
+    def inner(x_all):
+        return lp_filter_iir(x_all, DECAY_FULL_POWER=DECAY_FULL_POWER, DECAY_PART=DECAY_PART)
+    return inner
 
 def sma_convolve(x_all, window_width=100, *args, **kwargs):
     """Simple moving average filter using convolution, NOT Verilog implementation.
@@ -125,11 +125,11 @@ def ema_convolve_extracted(x_all, **kwargs):
     for y in ema_convolve(x_all, **relevant_kwargs):
         yield y
 
-# def ema_wrapper(n=500, alpha=0.05):
-#     """Return an instance of ema() with n and alpha preset."""
-#     def inner(x_all):
-#         return ema(x_all, n=n, alpha=alpha)
-#     return inner
+def ema_wrapper(n=500, alpha=0.05):
+    """Return an instance of ema_convolve() with n and alpha preset."""
+    def inner(x_all):
+        return ema_convolve(x_all, n=n, alpha=alpha)
+    return inner
 
 
 @jit(nopython=True)
@@ -149,10 +149,9 @@ def cfd(x_all, inv_frac=3, delay_samples=100):
         buffer[0] = x
 
         # CFD calculation
-        working = buffer[delay_samples - 1]  # Delay
+        delayed = buffer[delay_samples - 1]  # Delay
         # Use of int() in following line just for casting, result SHOULD be int anyway (i.e. int() not in Verilog code)
-        working = int(- working * inv_frac)  # Negate and augment (equivalent to attenuating x)
-        y = x + working
+        y = int(x - delayed * inv_frac)
         yield y
 
 @jit(nopython=True)
@@ -161,6 +160,50 @@ def cfd_normalised(x_all, inv_frac=3, delay_samples=100):
     for y in cfd(x_all, inv_frac, delay_samples):
         yield int(y / inv_frac)  # Need to cast to int so that bit-shift (requires int) in lp_filter_iir() works
 
+
+@jit(nopython=True)
+def cfd2(x_all, inv_frac=3, delay_samples=100):
+    """Simulation of the constant fraction discriminator (CFD) described in Verilog (version 2).
+    As normally described, the parameters are `fraction` and `delay`.
+    The parameter `inv_frac` is `1/fraction`, so can multiply the conjugate variable
+        rather than divide (which is easier to synthesise).
+    The parameter `delay_samples` is `delay * sample_rate`.
+    """
+    buffer = np.zeros(delay_samples)  # In effect delays the input
+
+    for x in x_all:  # Simulate `always @ (posedge clk)`
+        # Buffer update and shift
+        for i in range(delay_samples - 2, 0 - 1, -1):
+            buffer[i + 1] = buffer[i]
+        buffer[0] = x
+
+        # CFD calculation
+        delayed = buffer[delay_samples - 1]  # Delay
+        # Use of int() in following line just for casting, result SHOULD be int anyway (i.e. int() not in Verilog)
+        y = int(delayed * inv_frac - x)
+        yield y
+
+@jit(nopython=True)
+def cfd3(x_all, inv_frac=3, delay_samples=100):
+    """Simulation of the constant fraction discriminator (CFD) described in Verilog (version 3).
+    As normally described, the parameters are `fraction` and `delay`.
+    The parameter `inv_frac` is `1/fraction`, so can multiply the conjugate variable
+        rather than divide (which is easier to synthesise).
+    The parameter `delay_samples` is `delay * sample_rate`.
+    """
+    buffer = np.zeros(delay_samples)  # In effect delays the input
+
+    for x in x_all:  # Simulate `always @ (posedge clk)`
+        # Buffer update and shift
+        for i in range(delay_samples - 2, 0 - 1, -1):
+            buffer[i + 1] = buffer[i]
+        buffer[0] = x
+
+        # CFD calculation
+        delayed = buffer[delay_samples - 1]  # Delay
+        # Use of int() in following line just for casting, result SHOULD be int anyway (i.e. int() not in Verilog)
+        y = int(- x * inv_frac + delayed)
+        yield y
 
 def diff(x_all, *args, **kwargs):
     return np.pad( np.diff(x_all), (0, 1) ) * 10
