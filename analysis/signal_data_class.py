@@ -227,7 +227,7 @@ class SignalData(object):
     def get_roc_curve_data(self, inv_frac_vals, delay_samples_vals, tolerance=None, verbose=False):
         self.tolerance = tolerance or self.tolerance
         if verbose:
-            print(self.tolerance)
+            print("Tolerance [s]:", self.tolerance)
             start_wall = time.time()
             start_cpu = time.process_time()
         all_performances = []
@@ -237,12 +237,6 @@ class SignalData(object):
             self.delay_samples = delay_samples
             for inv_frac in inv_frac_vals:
                 self.inv_frac = inv_frac
-                # # Do manually, self.regenerate() would also run the amplifier and filter
-                # self.run_cfd1()
-                # self.run_fil2()
-                # self.run_cfd2()
-                # self.run_fil3()
-                # self.run_zd()
                 self.regenerate()
                 sensitivity, specificity = self.get_sensitivity_specificity_v1(tolerance=self.tolerance)
                 all_performances.append({"sensitivity": sensitivity,
