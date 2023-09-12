@@ -148,8 +148,7 @@ def plot_roc_curves_iir(df, title="untitled"):
             specificities = filtered_df.specificity
             fallouts = 1 - specificities
             axis.plot(fallouts, sensitivities, label=f"Delay Samples: {delay_samples}")
-
-        plt.legend()
+        axis.legend()
 
     interact(update, decay_part=decay_part_slider)
 
@@ -187,8 +186,7 @@ def plot_roc_curves_sma(df, title="untitled"):
             specificities = filtered_df.specificity
             fallouts = 1 - specificities
             axis.plot(fallouts, sensitivities, label=f"Delay Samples: {delay_samples}")
-
-        plt.legend()
+        axis.legend()
 
     interact(update, window_width=window_width_slider)
 
