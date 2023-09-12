@@ -192,6 +192,6 @@ def plot_roc_curves_sma(df, title="untitled"):
 
         plt.legend()
 
-    interact(update, decay_part=window_slider)
+    interact(update, window_slider=window_slider)
 
     return fig

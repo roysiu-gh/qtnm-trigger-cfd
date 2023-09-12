@@ -14,6 +14,7 @@ class SignalData(object):
                  filter=lp_filter_iir_extracted,
                  discriminator=cfd,
                  zero_detector_alg=zero_detector2,
+                 run_second_filter=False,
                  run_discriminator_twice=False,
 
                  slice_start=0,
@@ -47,6 +48,7 @@ class SignalData(object):
         self.filter = filter
         self.cfd = discriminator
         self.zd = zero_detector_alg
+        self.run_second_filter = run_second_filter
         self.run_discriminator_twice = run_discriminator_twice
 
         if truth_data is not None:
@@ -83,7 +85,8 @@ class SignalData(object):
         self.run_amp()
         self.run_fil1()
         self.run_cfd1()
-        self.run_fil2()
+        if self.run_second_filter:
+            self.run_fil2()
         if self.run_discriminator_twice:
             self.run_cfd2()
             self.run_fil3()
@@ -127,8 +130,10 @@ class SignalData(object):
     def run_zd(self):
         if self.run_discriminator_twice:
             zd_done = self.zd(self.sig_fil3)
-        else:
+        elif self.run_second_filter:
             zd_done = self.zd(self.sig_fil2)
+        else:
+            zd_done = self.zd(self.sig_cfd1)
         self.output = np.array(list(zd_done))
         return self.output
 
