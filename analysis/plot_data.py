@@ -98,11 +98,9 @@ def plot_roc_curve(df, title="untitled"):
     fig.suptitle(title)
     axis.set_xlim(0, 1)
     axis.set_ylim(0, 1.1)
-    # axis.set_xlabel("Specificity (TNR)")
     axis.set_xlabel("Fall-out (FPR)")
     axis.set_ylabel("Sensitivity (TPR)")
 
-    # delay_samples_vals = np.arange(0, 300, 25)
     delay_samples_vals = np.sort(df.delay_samples.unique())  # Iterate though the delay_samples with data in the df
     df.sort_values(by=["specificity"], inplace=True)  # So that the plot lines are sensible
     for delay_samples in delay_samples_vals:
@@ -169,22 +167,22 @@ def plot_roc_curves_sma(df, title="untitled"):
     df.sort_values(by=["specificity"], inplace=True)  # So that the plot lines are sensible
 
     # Find decay_part values
-    window_vals = np.sort(df.decay_part.unique())
-    window_lower = window_vals[0]
-    window_upper = window_vals[-1]
-    window_step = window_vals[1] - window_vals[0]
-    window_slider = IntSlider(min=window_lower, max=window_upper, step=window_step,
-                              value=window_lower, description="Window samples",
-                              layout=Layout(width="50%"), )
+    window_width_vals = np.sort(df.window_width.unique())
+    window_width_lower = window_width_vals[0]
+    window_width_upper = window_width_vals[-1]
+    window_width_step = window_width_vals[1] - window_width_vals[0]
+    window_width_slider = IntSlider(min=window_width_lower, max=window_width_upper, step=window_width_step,
+                                    value=window_width_lower, description="Window width (samples)",
+                                    layout=Layout(width="50%"), )
 
-    def update(window):
+    def update(window_width):
         axis.cla()
-        axis.set_title(f"Window samples: {window}")
+        axis.set_title(f"Window width (samples): {window_width}")
         axis.set_xlabel("Fall-out (FPR)")
         axis.set_ylabel("Sensitivity (TPR)")
-        df_window = df[df.window == window]
+        df_window_width = df[df.window_width == window_width]
         for delay_samples in delay_samples_vals:
-            filtered_df = df_window[df_window.delay_samples == delay_samples]
+            filtered_df = df_window_width[df_window_width.delay_samples == delay_samples]
             sensitivities = filtered_df.sensitivity
             specificities = filtered_df.specificity
             fallouts = 1 - specificities
@@ -192,6 +190,6 @@ def plot_roc_curves_sma(df, title="untitled"):
 
         plt.legend()
 
-    interact(update, window_slider=window_slider)
+    interact(update, window_width=window_width_slider)
 
     return fig
