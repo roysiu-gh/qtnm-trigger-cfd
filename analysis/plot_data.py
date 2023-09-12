@@ -1,7 +1,7 @@
-import numpy as np
 import matplotlib.pyplot as plt
-from IPython.display import display
-from ipywidgets import interact, interactive, Layout, IntSlider
+import numpy as np
+from ipywidgets import interact, Layout, IntSlider
+
 from default_constants import DELAY_SAMPLES, FIGSIZE
 
 
@@ -103,7 +103,7 @@ def plot_roc_curve(df, title="untitled"):
     axis.set_ylabel("Sensitivity (TPR)")
 
     # delay_samples_vals = np.arange(0, 300, 25)
-    delay_samples_vals = np.sort( df.delay_samples.unique() )  # Iterate though the delay_samples with data in the df
+    delay_samples_vals = np.sort(df.delay_samples.unique())  # Iterate though the delay_samples with data in the df
     df.sort_values(by=["specificity"], inplace=True)  # So that the plot lines are sensible
     for delay_samples in delay_samples_vals:
         filtered_df = df[df.delay_samples == delay_samples]
@@ -118,7 +118,8 @@ def plot_roc_curve(df, title="untitled"):
 
     return fig
 
-def plot_roc_curves(df, title="untitled"):
+
+def plot_roc_curves_iir(df, title="untitled"):
     """Same as plot_roc_curve(), but includes a slider for different decay_part values"""
     fig, axis = plt.subplots()
     fig.suptitle(title)
@@ -134,7 +135,7 @@ def plot_roc_curves(df, title="untitled"):
     decay_part_upper = decay_part_vals[-1]
     decay_part_step = decay_part_vals[1] - decay_part_vals[0]
     decay_part_slider = IntSlider(min=decay_part_lower, max=decay_part_upper, step=decay_part_step,
-                                  value=950, description="Decay part / 1024",
+                                  value=decay_part_lower, description="Decay part / 1024",
                                   layout=Layout(width="50%"), )
 
     def update(decay_part):
@@ -142,7 +143,7 @@ def plot_roc_curves(df, title="untitled"):
         axis.set_title(f"Decay: {decay_part}/1024")
         axis.set_xlabel("Fall-out (FPR)")
         axis.set_ylabel("Sensitivity (TPR)")
-        df_decay_part = df[ df.decay_part == decay_part ]
+        df_decay_part = df[df.decay_part == decay_part]
         for delay_samples in delay_samples_vals:
             filtered_df = df_decay_part[df_decay_part.delay_samples == delay_samples]
             sensitivities = filtered_df.sensitivity
@@ -153,5 +154,44 @@ def plot_roc_curves(df, title="untitled"):
         plt.legend()
 
     interact(update, decay_part=decay_part_slider)
+
+    return fig
+
+
+def plot_roc_curves_sma(df, title="untitled"):
+    """Same as plot_roc_curve(), but includes a slider for different decay_part values"""
+    fig, axis = plt.subplots()
+    fig.suptitle(title)
+    axis.set_xlim(0, 1)
+    axis.set_ylim(0, 1.1)
+
+    delay_samples_vals = np.sort(df.delay_samples.unique())
+    df.sort_values(by=["specificity"], inplace=True)  # So that the plot lines are sensible
+
+    # Find decay_part values
+    window_vals = np.sort(df.decay_part.unique())
+    window_lower = window_vals[0]
+    window_upper = window_vals[-1]
+    window_step = window_vals[1] - window_vals[0]
+    window_slider = IntSlider(min=window_lower, max=window_upper, step=window_step,
+                              value=window_lower, description="Window samples",
+                              layout=Layout(width="50%"), )
+
+    def update(window):
+        axis.cla()
+        axis.set_title(f"Window samples: {window}")
+        axis.set_xlabel("Fall-out (FPR)")
+        axis.set_ylabel("Sensitivity (TPR)")
+        df_window = df[df.window == window]
+        for delay_samples in delay_samples_vals:
+            filtered_df = df_window[df_window.delay_samples == delay_samples]
+            sensitivities = filtered_df.sensitivity
+            specificities = filtered_df.specificity
+            fallouts = 1 - specificities
+            axis.plot(fallouts, sensitivities, label=f"Delay Samples: {delay_samples}")
+
+        plt.legend()
+
+    interact(update, decay_part=window_slider)
 
     return fig

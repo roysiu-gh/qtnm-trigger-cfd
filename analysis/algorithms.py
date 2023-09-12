@@ -63,14 +63,18 @@ def lp_filter_iir_extracted(x_all, **kwargs):
     for y in lp_filter_iir(x_all, **relevant_kwargs):
         yield y
 
+
 def lp_filter_iir_wrapper(DECAY_FULL_POWER=10, DECAY_PART=900):
     """Return an instance of lp_filter_iir() with DECAY_FULL_POWER and DECAY_PART preset."""
+
     @jit(nopython=True)
     def inner(x_all):
         return lp_filter_iir(x_all, DECAY_FULL_POWER=DECAY_FULL_POWER, DECAY_PART=DECAY_PART)
+
     return inner
 
-def sma_convolve(x_all, window_width=100, *args, **kwargs):
+
+def sma_convolve(x_all, window_width=100):
     """Simple moving average filter using convolution, NOT Verilog implementation.
     `window_width` is window size in samples
     """
@@ -87,13 +91,15 @@ def sma_convolve_extracted(x_all, **kwargs):
     for y in sma_convolve(x_all, **relevant_kwargs):
         yield y
 
+
 def wma_linear_convolve(x_all, window_width=100):
     """(Linearly) weighted moving average filter
     `n` is window size in samples
     """
     weights = np.arange(window_width)
-    sum = (window_width - 1) * window_width / 2  # n -> n-1
-    return np.convolve(x_all, weights, "same") / sum
+    total = (window_width - 1) * window_width / 2  # n -> n-1
+    return np.convolve(x_all, weights, "same") / total
+
 
 def wma_linear_convolve_extracted(x_all, **kwargs):
     """ A wrapper for sma_convolve() as Numba doesn't support the **kwargs construct. Ignore irrelevant arguments.
@@ -105,13 +111,15 @@ def wma_linear_convolve_extracted(x_all, **kwargs):
     for y in wma_linear_convolve(x_all, **relevant_kwargs):
         yield y
 
+
 def ema_convolve(x_all, window_width=500, alpha=0.05):
     """Exponentially weighted moving average filter
     `n` is window size in samples, formula is e ** (alpha * x)
     """
     weights = np.exp(np.arange(0, alpha * window_width, alpha))
-    sum = np.sum(weights)
-    return np.convolve(x_all, weights, "same") / sum
+    total = np.sum(weights)
+    return np.convolve(x_all, weights, "same") / total
+
 
 def ema_convolve_extracted(x_all, **kwargs):
     """ A wrapper for sma_convolve() as Numba doesn't support the **kwargs construct. Ignore irrelevant arguments.
@@ -125,10 +133,13 @@ def ema_convolve_extracted(x_all, **kwargs):
     for y in ema_convolve(x_all, **relevant_kwargs):
         yield y
 
-def ema_wrapper(n=500, alpha=0.05):
+
+def ema_wrapper(window_width=500, alpha=0.05):
     """Return an instance of ema_convolve() with n and alpha preset."""
+
     def inner(x_all):
-        return ema_convolve(x_all, n=n, alpha=alpha)
+        return ema_convolve(x_all, window_width=window_width, alpha=alpha)
+
     return inner
 
 
@@ -153,6 +164,7 @@ def cfd(x_all, inv_frac=3, delay_samples=100):
         # Use of int() in following line just for casting, result SHOULD be int anyway (i.e. int() not in Verilog code)
         y = int(x - delayed * inv_frac)
         yield y
+
 
 @jit(nopython=True)
 def cfd_normalised(x_all, inv_frac=3, delay_samples=100):
@@ -183,6 +195,7 @@ def cfd2(x_all, inv_frac=3, delay_samples=100):
         y = int(delayed * inv_frac - x)
         yield y
 
+
 @jit(nopython=True)
 def cfd3(x_all, inv_frac=3, delay_samples=100):
     """Simulation of the constant fraction discriminator (CFD) described in Verilog (version 3).
@@ -205,8 +218,9 @@ def cfd3(x_all, inv_frac=3, delay_samples=100):
         y = int(- x * inv_frac + delayed)
         yield y
 
-def diff(x_all, *args, **kwargs):
-    return np.pad( np.diff(x_all), (0, 1) ) * 10
+
+def diff(x_all):
+    return np.pad(np.diff(x_all), (0, 1)) * 10
 
 
 @jit(nopython=True, parallel=True)

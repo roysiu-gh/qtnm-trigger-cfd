@@ -1,11 +1,9 @@
 import matplotlib.pyplot as plt
-
-from algorithms import *
-from default_constants import *
-from signal_data_class import SignalData
-
 from IPython.display import display
 from ipywidgets import interactive, Layout, IntSlider, FloatRangeSlider, FloatSlider, Label
+
+from default_constants import *
+from signal_data_class import SignalData
 
 
 class InteractiveTrigger(SignalData):
@@ -71,8 +69,8 @@ class InteractiveTrigger(SignalData):
         self.plt_cfd1.set_ydata(self.sig_cfd1)
         self.plt_fil2.set_ydata(self.sig_fil2)
         if self.run_discriminator_twice:
-            self.plt_cfd2.set_ydata(self.sig_cfd2)###
-            self.plt_fil3.set_ydata(self.sig_fil3)###
+            self.plt_cfd2.set_ydata(self.sig_cfd2)
+            self.plt_fil3.set_ydata(self.sig_fil3)
         self.plt_zer.remove()
         self.plt_zer = self.axis.scatter(*self.get_nonzeros(self.output),
                                          label="ZD output", marker="x", color="purple", s=1000, zorder=3)
@@ -94,8 +92,8 @@ class InteractiveTrigger(SignalData):
         self.plt_cfd1, = self.axis.plot(self.t, self.sig_cfd1, label="CFD output 1")
         self.plt_fil2, = self.axis.plot(self.t, self.sig_fil2, label="LP filt 2")
         if self.run_discriminator_twice:
-            self.plt_cfd2, = self.axis.plot(self.t, self.sig_cfd2, label="CFD output 2")###
-            self.plt_fil3, = self.axis.plot(self.t, self.sig_fil3, label="LP filt 3")###
+            self.plt_cfd2, = self.axis.plot(self.t, self.sig_cfd2, label="CFD output 2")
+            self.plt_fil3, = self.axis.plot(self.t, self.sig_fil3, label="LP filt 3")
         self.plt_zer = self.axis.scatter(*self.get_nonzeros(self.output))
         self.plt_tru = self.axis.scatter(*self.get_nonzeros(self.truth_data))
 

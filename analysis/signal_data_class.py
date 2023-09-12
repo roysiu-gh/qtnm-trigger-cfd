@@ -1,8 +1,7 @@
 import time
-import numpy as np
 
-from default_constants import *
 from algorithms import *
+from default_constants import *
 
 
 class SignalData(object):
@@ -12,8 +11,8 @@ class SignalData(object):
                  truth_data=None,
 
                  # filter_alg=lp_filter_iir,
-                 filter_alg=lp_filter_iir_extracted,
-                 cfd_alg=cfd,
+                 filter=lp_filter_iir_extracted,
+                 discriminator=cfd,
                  zero_detector_alg=zero_detector2,
                  run_discriminator_twice=False,
 
@@ -30,13 +29,23 @@ class SignalData(object):
                  inv_frac=INV_FRAC,
                  tolerance=TOLERANCE,
                  ):
+        self.output = None
+        self.sig_fil3 = None
+        self.sig_cfd2 = None
+        self.sig_fil2 = None
+        self.sig_cfd1 = None
+        self.sig_fil1 = None
+        self.sig_amp = None
+        self.truth_data = None
+        self.sig = None
+        self.t = None
         self.all_t = np.array(time)
         self.all_sig = np.array(signal)
         if len(time) != len(signal):
             raise IndexError(f"time and signal length mismatch: {len(time)} and {len(signal)}")
 
-        self.filter = filter_alg
-        self.cfd = cfd_alg
+        self.filter = filter
+        self.cfd = discriminator
         self.zd = zero_detector_alg
         self.run_discriminator_twice = run_discriminator_twice
 
@@ -76,8 +85,8 @@ class SignalData(object):
         self.run_cfd1()
         self.run_fil2()
         if self.run_discriminator_twice:
-            self.run_cfd2()###
-            self.run_fil3()###
+            self.run_cfd2()
+            self.run_fil3()
         self.run_zd()
 
     def slice(self):
@@ -197,12 +206,6 @@ class SignalData(object):
             self.delay_samples = delay_samples
             for inv_frac in inv_frac_vals:
                 self.inv_frac = inv_frac
-                # Only run CFD1, LP filter 2, CFD2, and ZD, where self.regenerate() would also run the amplifier and filter
-                # self.run_cfd1()
-                # self.run_fil2()
-                # # self.run_cfd2()
-                # # self.run_fil3()
-                # self.run_zd()
                 self.regenerate()
                 all_performances.append(self.get_current_performance(tolerance=self.tolerance))
             if verbose: print(".", end="")
