@@ -21,7 +21,7 @@ class SignalData(object):
                  slice_end=None,  # None sends the slice to the end
                  amp_power=16,
                  filter_args={
-                     "DECAY_PART": DECAY_PART,
+                     "decay_part": DECAY_PART,
                      "window_width": WINDOW_WIDTH,
                      "alpha": ALPHA,
                  },
@@ -68,7 +68,6 @@ class SignalData(object):
         self.slice_end = slice_end
 
         self.filter_args = filter_args
-        # self.decay_part = decay_part
         self.delay_samples = delay_samples
         self.inv_frac = inv_frac
         self.amp_power = amp_power
