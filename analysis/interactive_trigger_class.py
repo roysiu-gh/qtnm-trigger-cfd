@@ -48,12 +48,12 @@ class InteractiveTrigger(SignalData):
             self.axis.set_xlim(self.view_range)
             return None  # To skip rest of computation
 
-        if decay_part != self.filter_alg_args["DECAY_PART"]:
-            self.filter_alg_args["DECAY_PART"] = decay_part
-        if window_width != self.filter_alg_args["window_width"]:
-            self.filter_alg_args["window_width"] = window_width
-        if alpha != self.filter_alg_args["alpha"]:
-            self.filter_alg_args["alpha"] = alpha
+        if decay_part != self.filter_args["DECAY_PART"]:
+            self.filter_args["DECAY_PART"] = decay_part
+        if window_width != self.filter_args["window_width"]:
+            self.filter_args["window_width"] = window_width
+        if alpha != self.filter_args["alpha"]:
+            self.filter_args["alpha"] = alpha
         if inv_frac != self.inv_frac:
             self.inv_frac = inv_frac
         if delay_samples != self.delay_samples:
@@ -103,13 +103,13 @@ class InteractiveTrigger(SignalData):
         self.misfire_rate_text = Label()
 
         decay_part_slider = IntSlider(min=880, max=1024, step=12,
-                                      value=self.filter_alg_args["DECAY_PART"], description="Decay part / 1024",
+                                      value=self.filter_args["DECAY_PART"], description="Decay part / 1024",
                                       layout=Layout(width="50%"), )
         window_width_slider = IntSlider(min=5, max=300, step=5,
-                                        value=self.filter_alg_args["window_width"], description="Window Width",
+                                        value=self.filter_args["window_width"], description="Window Width",
                                         layout=Layout(width="75%"), )
         alpha_slider = FloatSlider(min=0, max=0.15, step=0.001,
-                                   value=self.filter_alg_args["alpha"], description="Alpha (for EMA)",
+                                   value=self.filter_args["alpha"], description="Alpha (for EMA)",
                                    layout=Layout(width="95%"), )
 
         delay_samples_slider = IntSlider(min=0, max=300, step=10,
@@ -133,9 +133,9 @@ class InteractiveTrigger(SignalData):
                                   )
 
         # Initialise
-        self.update(decay_part=self.filter_alg_args["DECAY_PART"],
-                    window_width=self.filter_alg_args["window_width"],
-                    alpha=self.filter_alg_args["alpha"],
+        self.update(decay_part=self.filter_args["DECAY_PART"],
+                    window_width=self.filter_args["window_width"],
+                    alpha=self.filter_args["alpha"],
                     delay_samples=self.delay_samples,
                     inv_frac=self.inv_frac,
                     view_range=self.view_range,

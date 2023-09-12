@@ -33,14 +33,14 @@ def human_time(seconds):
 
 
 @jit(nopython=True)
-def lp_filter_iir(x_all, DECAY_FULL_POWER=10, DECAY_PART=900):
+def lp_filter_iir(x_all, DECAY_FULL_POWER=10, decay_part=900):
     """ Low-pass IIR filter simulation of Verilog implementation
     Write as a generator to simulate verilog functionality
     Default DECAY_FULL_POWER = 10 so that DECAY_FULL = 1024
     Cannot parallelise
     """
-    a = (2 ** DECAY_FULL_POWER) - DECAY_PART
-    b = DECAY_PART
+    a = (2 ** DECAY_FULL_POWER) - decay_part
+    b = decay_part
 
     last_y = 0
 
@@ -57,19 +57,19 @@ def lp_filter_iir_extracted(x_all, **kwargs):
     relevant_kwargs = {}
     if "DECAY_FULL_POWER" in kwargs:
         relevant_kwargs["DECAY_FULL_POWER"] = kwargs["DECAY_FULL_POWER"]
-    if "DECAY_PART" in kwargs:
-        relevant_kwargs["DECAY_PART"] = kwargs["DECAY_PART"]
+    if "decay_part" in kwargs:
+        relevant_kwargs["decay_part"] = kwargs["decay_part"]
 
     for y in lp_filter_iir(x_all, **relevant_kwargs):
         yield y
 
 
-def lp_filter_iir_wrapper(DECAY_FULL_POWER=10, DECAY_PART=900):
+def lp_filter_iir_wrapper(DECAY_FULL_POWER=10, decay_part=900):
     """Return an instance of lp_filter_iir() with DECAY_FULL_POWER and DECAY_PART preset."""
 
     @jit(nopython=True)
     def inner(x_all):
-        return lp_filter_iir(x_all, DECAY_FULL_POWER=DECAY_FULL_POWER, DECAY_PART=DECAY_PART)
+        return lp_filter_iir(x_all, DECAY_FULL_POWER=DECAY_FULL_POWER, decay_part=decay_part)
 
     return inner
 

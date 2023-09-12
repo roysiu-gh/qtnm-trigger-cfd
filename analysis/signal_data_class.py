@@ -20,7 +20,7 @@ class SignalData(object):
                  slice_start=0,
                  slice_end=None,  # None sends the slice to the end
                  amp_power=16,
-                 filter_alg_args={
+                 filter_args={
                      "DECAY_PART": DECAY_PART,
                      "window_width": WINDOW_WIDTH,
                      "alpha": ALPHA,
@@ -67,7 +67,7 @@ class SignalData(object):
         self.slice_start = slice_start
         self.slice_end = slice_end
 
-        self.filter_alg_args = filter_alg_args
+        self.filter_args = filter_args
         # self.decay_part = decay_part
         self.delay_samples = delay_samples
         self.inv_frac = inv_frac
@@ -103,7 +103,7 @@ class SignalData(object):
         return self.sig_amp
 
     def run_fil1(self):
-        filtered = self.filter(self.sig_amp, **self.filter_alg_args)
+        filtered = self.filter(self.sig_amp, **self.filter_args)
         self.sig_fil1 = np.array(list(filtered))
         return self.sig_fil1
 
@@ -113,7 +113,7 @@ class SignalData(object):
         return self.sig_cfd1
 
     def run_fil2(self):
-        filtered = self.filter(self.sig_cfd1, **self.filter_alg_args)
+        filtered = self.filter(self.sig_cfd1, **self.filter_args)
         self.sig_fil2 = np.array(list(filtered))
         return self.sig_fil2
 
@@ -123,7 +123,7 @@ class SignalData(object):
         return self.sig_cfd2
 
     def run_fil3(self):
-        filtered = self.filter(self.sig_cfd2, **self.filter_alg_args)
+        filtered = self.filter(self.sig_cfd2, **self.filter_args)
         self.sig_fil3 = np.array(list(filtered))
         return self.sig_fil3
 
@@ -234,13 +234,12 @@ class SignalData(object):
 
     def get_roc_curve_data(self, inv_frac_vals, delay_samples_vals, tolerance=None, verbose=False):
         self.tolerance = tolerance or self.tolerance
+        all_performances = []
         if verbose:
             print("Tolerance [s]:", self.tolerance)
             start_wall = time.time()
             start_cpu = time.process_time()
-        all_performances = []
-
-        if verbose: print("." * len(delay_samples_vals))
+            print("." * len(delay_samples_vals))
         for delay_samples in delay_samples_vals:
             self.delay_samples = delay_samples
             for inv_frac in inv_frac_vals:
@@ -262,3 +261,45 @@ class SignalData(object):
             print("CPU time:", human_time(end_cpu - start_cpu))
 
         return all_performances
+
+    def get_roc_curve_data2(self, filter_arg_range, inv_frac_range, delay_samples_range,
+                            filter=lp_filter_iir_extracted, filter_arg_name="decay_part",
+                            tolerance=None, verbose=False):
+        """ Generate ROC curve data for varied values for the first filter arg, inv_frac, delay_samples.
+        For the values, takes tuple (min, max, step).
+        """
+        self.tolerance = tolerance or self.tolerance
+        self.filter = filter
+
+        filter_arg_vals = np.arange(*filter_arg_range)
+        inv_frac_vals = np.arange(*inv_frac_range)
+        delay_samples_vals = np.arange(*delay_samples_range)
+
+        roc_datas = []
+        if verbose:
+            print("Tolerance [s]:", self.tolerance)
+            start_wall = time.time()
+            start_cpu = time.process_time()
+            print("." * len(filter_arg_vals))
+        for filter_arg in filter_arg_vals:
+            self.filter_args[filter_arg_name] = filter_arg
+            roc_data = self.get_roc_curve_data(
+                inv_frac_vals=inv_frac_vals,
+                delay_samples_vals=delay_samples_vals,
+                tolerance=1,
+                # verbose=True,
+            )
+            for performance in roc_data:
+                performance[filter_arg_name] = filter_arg
+            roc_datas.append(roc_data)
+            if verbose: print(".", end="")
+
+        if verbose:
+            end_wall = time.time()
+            end_cpu = time.process_time()
+            print()
+            print("Wall time:", human_time(end_wall - start_wall))
+            print("CPU time:", human_time(end_cpu - start_cpu))
+
+        roc_datas_flat = [item for row in roc_datas for item in row]
+        return roc_datas_flat
