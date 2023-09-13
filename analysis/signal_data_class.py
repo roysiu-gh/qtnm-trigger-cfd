@@ -28,7 +28,9 @@ class SignalData(object):
                  # decay_part=DECAY_PART,
                  delay_samples=DELAY_SAMPLES,
                  inv_frac=INV_FRAC,
+
                  tolerance=TOLERANCE,
+                 section_time=SECTION_TIME,
                  ):
         self.output = None
         self.sig_fil3 = None
@@ -72,6 +74,7 @@ class SignalData(object):
         self.inv_frac = inv_frac
         self.amp_power = amp_power
         self.tolerance = tolerance
+        self.section_time = section_time
         self.sampling_period = self.all_t[1] - self.all_t[0]  # Assumes constant sample time-spacing
 
         self.regenerate()
@@ -227,7 +230,7 @@ class SignalData(object):
         self.tolerance = tolerance or self.tolerance
 
         return get_sensitivity_specificity_compiled_v1(self.output, self.truth_data,
-                                                       section_time=SECTION_TIME,
+                                                       section_time=self.section_time,
                                                        sampling_period=self.sampling_period,
                                                        tolerance=self.tolerance, )
 
