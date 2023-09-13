@@ -102,7 +102,7 @@ class InteractiveTrigger(SignalData):
         self.hitrate_text = Label()
         self.misfire_rate_text = Label()
 
-        decay_part_slider = IntSlider(min=880, max=1024, step=12,
+        decay_part_slider = IntSlider(min=880, max=1024, step=3,
                                       value=self.filter_args["decay_part"], description="Decay part / 1024",
                                       layout=Layout(width="50%"), )
         window_width_slider = IntSlider(min=5, max=300, step=5,

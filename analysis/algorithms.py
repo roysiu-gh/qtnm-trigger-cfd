@@ -7,7 +7,7 @@ import pkg_resources
 
 __requires__ = "numpy==1.24"  # For numba
 
-from default_constants import TOLERANCE
+from default_constants import *
 
 pkg_resources.require(__requires__)
 
@@ -30,6 +30,12 @@ def human_time(seconds):
         if amount > 0:
             parts.append(f"{amount} {unit}{'' if amount == 1 else 's'}")
     return ", ".join(parts)
+
+
+# @jit(nopython=True)
+def no_filter(x_all, *args, **kwargs):
+    for x in x_all:
+        yield x
 
 
 @jit(nopython=True)
@@ -222,6 +228,37 @@ def cfd3(x_all, inv_frac=3, delay_samples=100):
 def diff(x_all):
     return np.pad(np.diff(x_all), (0, 1)) * 10
 
+# @jit(nopython=True)
+def mad_discriminator(x_all, window_width=WINDOW_WIDTH, madt=2, *args, **kwargs):
+    """ Not Verilog-ready
+    madt is mean absolute dev threshold
+    """
+    n = window_width
+
+    mean_buffer = np.zeros(n)
+    deviation_buffer = np.zeros(n)
+
+    for x in x_all:
+        # Mean buffer update and shift
+        for i in range(n - 2, 0 - 1, -1):
+            mean_buffer[i + 1] = mean_buffer[i]
+        mean_buffer[0] = x / n
+
+        mean = np.sum(mean_buffer)
+
+        # Deviation buffer update and shift
+        for i in range(n - 2, 0 - 1, -1):
+            deviation_buffer[i + 1] = deviation_buffer[i]
+        deviation_buffer[0] = np.abs(x - mean) / n
+
+        mad = np.sum(deviation_buffer)
+
+        ## Avoid np.sum with maths!
+
+        # yield mean, mad
+
+        # Convert two thresholds either side or mean into one using abs()
+        yield np.abs(mean) - mad * madt
 
 @jit(nopython=True, parallel=True)
 def zero_detector(x_all):
