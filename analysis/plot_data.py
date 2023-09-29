@@ -1,11 +1,21 @@
+"""Contains various functions for plotting computed data from analysing algorithms."""
+
 import matplotlib.pyplot as plt
 import numpy as np
+import pandas as pd
 from ipywidgets import interact, Layout, IntSlider
 
 from default_constants import DELAY_SAMPLES, FIGSIZE
 
 
-def plot_inv_frac(df, delay_samples=DELAY_SAMPLES, title="untitled"):
+def plot_inv_frac(df: pd.DataFrame, delay_samples: int = DELAY_SAMPLES, title: str = "untitled"):
+    """Show twin plots with hitrate, misfires, and misfire rate for a given delay_samples with varying inv_frac.
+
+    :param df: A Pandas dataframe with values for delay_samples, inv_frac, hitrate, and misfires.
+    :param delay_samples: See cfd().
+    :param title: The suptitle for the plots.
+    :return: A pyplot figure.
+    """
     df = df[df.delay_samples == delay_samples]
 
     fig, (ax1_1, ax2) = plt.subplots(1, 2)
@@ -22,9 +32,9 @@ def plot_inv_frac(df, delay_samples=DELAY_SAMPLES, title="untitled"):
     ax1_1.plot(df.inv_frac, df.hitrate, color=color)
     ax1_1.tick_params(axis='y', labelcolor=color)
 
-    ax1_2 = ax1_1.twinx()  # instantiate a second axes that shares the same x-axis
+    ax1_2 = ax1_1.twinx()  # Instantiate second axes with same x-axis
     color = "tab:red"
-    ax1_2.set_ylabel("Misfires", color=color)  # we already handled the x-label with ax1
+    ax1_2.set_ylabel("Misfires", color=color)  # Already handled x-label with ax1_1
     ax1_2.plot(df.inv_frac, df.misfires, color=color)
     ax1_2.tick_params(axis='y', labelcolor=color)
 
@@ -43,7 +53,13 @@ def plot_inv_frac(df, delay_samples=DELAY_SAMPLES, title="untitled"):
     return fig
 
 
-def plot_all_3d(df, title="untitled"):
+def plot_all_3d(df: pd.DataFrame, title: str = "untitled"):
+    """Plot hitrates and misfire rates (z-axes) for varying delay_samples and inv_frac.
+
+    :param df: A Pandas dataframe with values for delay_samples, inv_frac, hitrate, and misfires.
+    :param title: The suptitle for the plots.
+    :return: A pyplot figure.
+    """
     fig, (ax1, ax2) = plt.subplots(1, 2,
                                    subplot_kw={"projection": "3d"},
                                    figsize=FIGSIZE)
@@ -72,8 +88,13 @@ def plot_all_3d(df, title="untitled"):
     return fig
 
 
-def plot_misfires(df, title="untitled"):
-    """3D plot of misfires, useful for looking at noise."""
+def plot_misfires(df: pd.DataFrame, title: str = "untitled"):
+    """Plot (3D) misfires for varying delay_samples and inv_frac.
+
+    :param df: A Pandas dataframe with values for delay_samples, inv_frac, and misfires.
+    :param title: The suptitle for the plots.
+    :return: A pyplot figure.
+    """
     fig, axis = plt.subplots(1, 1,
                              subplot_kw={"projection": "3d"},
                              figsize=FIGSIZE)
@@ -93,7 +114,14 @@ def plot_misfires(df, title="untitled"):
     return fig
 
 
-def plot_roc_curve(df, title="untitled"):
+def plot_roc_curve(df: pd.DataFrame, title: str = "untitled"):
+    """Plot a Receiver Operating Characteristic (ROC) curve. Plot a curve for different values of `delay_samples`.
+    Vary `inv_frac` for each curve.
+
+    :param df: A Pandas dataframe with values for delay_samples, inv_frac, sensitivity, and specificity.
+    :param title: The title for the plot.
+    :return: A pyplot figure.
+    """
     fig, axis = plt.subplots()
     fig.suptitle(title)
     axis.set_xlim(0, 1)
@@ -117,8 +145,14 @@ def plot_roc_curve(df, title="untitled"):
     return fig
 
 
-def plot_roc_curves_iir(df, title="untitled"):
-    """Same as plot_roc_curve(), but includes a slider for different decay_part values"""
+def plot_roc_curves_iir(df: pd.DataFrame, title: str = "untitled"):
+    """Same as plot_roc_curve(), but includes a slider for different `decay_part` values.
+    Use only for data collected from using `lp_filter_iir()`.
+
+    :param df: A Pandas dataframe with values for delay_samples, inv_frac, sensitivity, and specificity.
+    :param title: The title for the plot.
+    :return: A pyplot figure.
+    """
     fig, axis = plt.subplots()
     fig.suptitle(title)
     axis.set_xlim(0, 1)
@@ -155,8 +189,14 @@ def plot_roc_curves_iir(df, title="untitled"):
     return fig
 
 
-def plot_roc_curves_sma(df, title="untitled"):
-    """Same as plot_roc_curve(), but includes a slider for different decay_part values"""
+def plot_roc_curves_sma(df: pd.DataFrame, title: str = "untitled"):
+    """Same as plot_roc_curve(), but includes a slider for different `window_width` values.
+    Use only for data collected from using `sma_convolve()`.
+
+    :param df: A Pandas dataframe with values for delay_samples, inv_frac, sensitivity, and specificity.
+    :param title: The title for the plot.
+    :return: A pyplot figure.
+    """
     fig, axis = plt.subplots()
     fig.suptitle(title)
     axis.set_xlim(0, 1)
