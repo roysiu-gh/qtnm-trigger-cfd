@@ -1,22 +1,40 @@
+from typing import Any
+
 import matplotlib.pyplot as plt
+import numpy as np
 from IPython.display import display
 from ipywidgets import interactive, Layout, IntSlider, FloatRangeSlider, FloatSlider, Label
+from nptyping import NDArray
 
 from default_constants import *
 from signal_data_class import SignalData
 
 
 class InteractiveTrigger(SignalData):
+    """A subclass of SignalData with methods to show an interactive graph of the signal (Matched Filter output) data
+    and its processing in a JupyterLab notebook."""
+
     def __init__(self,
-                 time,
-                 signal,
-                 title="untitled",
-                 yscale="linear",
-                 delay_samples=DELAY_SAMPLES,
-                 inv_frac=INV_FRAC,
+                 time: NDArray[(Any,), np.int32],
+                 signal: NDArray[(Any,), np.int32],
+                 title: str = "untitled",
+                 yscale: str = "linear",
+                 delay_samples: int = DELAY_SAMPLES,
+                 inv_frac: int = INV_FRAC,
                  *args,
                  **kwargs,
                  ):
+        """Call the superclass' constructor and set some instance variables.
+
+        :param time: See SignalData.
+        :param signal: See SignalData.
+        :param title: The title for the plot.
+        :param yscale: The pyplotlib yscale for the plot.
+        :param delay_samples: See cfd().
+        :param inv_frac: See cfd().
+        :param args: See SignalData.
+        :param kwargs: See SignalData.
+        """
         super().__init__(
             time=time,
             signal=signal,
@@ -25,6 +43,18 @@ class InteractiveTrigger(SignalData):
             *args,
             **kwargs,
         )
+        self.widget = None
+        self.misfire_rate_text = None
+        self.hitrate_text = None
+        self.plt_fil3 = None
+        self.plt_cfd2 = None
+        self.plt_fil2 = None
+        self.plt_cfd1 = None
+        self.axis = None
+        self.plt_fil1 = None
+        self.fig = None
+        self.plt_tru = None
+        self.plt_zer = None
         self.title = title
         self.yscale = yscale
 
@@ -33,7 +63,7 @@ class InteractiveTrigger(SignalData):
         self.view_range = [view_range_min, view_range_max]
 
     def get_nonzeros(self, series):
-        """Returns datapoints where 'y'-val is non-zero."""
+        """Return datapoints where 'y'-val is non-zero."""
         times = []
         nonzerodata = []
         for index, item in enumerate(series):
@@ -42,7 +72,19 @@ class InteractiveTrigger(SignalData):
                 nonzerodata.append(item)
         return times, nonzerodata
 
-    def update(self, decay_part, window_width, alpha, delay_samples, inv_frac, view_range):
+    def update(self, decay_part: int, window_width: int, alpha: float,
+               delay_samples: int, inv_frac: int,
+               view_range: tuple[float: float]):
+        """Update the interactive plot.
+
+        :param decay_part: Used if using `lp_filter_iir()`.
+        :param window_width: Used in various filters (usually Simple Moving Average variants).
+        :param alpha: Used in Exponential Moving Average filter.
+        :param delay_samples: See cfd().
+        :param inv_frac: See cfd().
+        :param view_range: The time-series range to display.
+        :return: None
+        """
         if view_range != self.view_range:
             self.view_range = view_range
             self.axis.set_xlim(self.view_range)
@@ -83,9 +125,12 @@ class InteractiveTrigger(SignalData):
         plt.legend(loc="upper right")
 
     def show(self):
+        """Create and show the interactive plot."""
+        # Create outline.
         self.fig, self.axis = plt.subplots(figsize=FIGSIZE)
         self.fig.suptitle(self.title)
 
+        # Plot
         self.axis.set_xlim(self.view_range)
         self.axis.set_yscale(self.yscale)
         self.axis.plot(self.t, self.sig_amp, label="Amplifier output")
@@ -99,9 +144,11 @@ class InteractiveTrigger(SignalData):
         self.plt_zer = self.axis.scatter(*self.get_nonzeros(self.output))
         self.plt_tru = self.axis.scatter(*self.get_nonzeros(self.truth_data))
 
+        # Make labels to show hitrate and misfire_rate above plot
         self.hitrate_text = Label()
         self.misfire_rate_text = Label()
 
+        # Create slider widgets
         decay_part_slider = IntSlider(min=880, max=1024, step=3,
                                       value=self.filter_args["decay_part"], description="Decay part / 1024",
                                       layout=Layout(width="50%"), )
