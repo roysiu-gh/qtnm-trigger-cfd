@@ -1,0 +1,113 @@
+﻿<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
+<EDKSYSTEM EDWVERSION="1.2" TIMESTAMP="Sat Aug 12 16:26:29 2023" VIVADOVERSION="2016.3">
+
+  <SYSTEMINFO ARCH="zynq" DEVICE="7z010" NAME="design_1" PACKAGE="clg400" SPEEDGRADE="-1"/>
+
+  <EXTERNALPORTS>
+    <PORT CLKFREQUENCY="125000000" DIR="I" NAME="adc_clk_n_i" SIGIS="clk" SIGNAME="External_Ports_adc_clk_n_i">
+      <CONNECTIONS>
+        <CONNECTION INSTANCE="lp_filter_2_0" PORT="clk"/>
+        <CONNECTION INSTANCE="zero_detector_0" PORT="clk"/>
+        <CONNECTION INSTANCE="cfd_0" PORT="clk"/>
+      </CONNECTIONS>
+    </PORT>
+    <PORT DIR="I" NAME="MF_out" SIGIS="data" SIGNAME="External_Ports_MF_out">
+      <CONNECTIONS>
+        <CONNECTION INSTANCE="lp_filter_2_0" PORT="x"/>
+      </CONNECTIONS>
+    </PORT>
+    <PORT DIR="O" LEFT="0" NAME="record_data" RIGHT="0" SIGIS="undef" SIGNAME="zero_detector_0_y">
+      <CONNECTIONS>
+        <CONNECTION INSTANCE="zero_detector_0" PORT="y"/>
+      </CONNECTIONS>
+    </PORT>
+  </EXTERNALPORTS>
+
+  <EXTERNALINTERFACES/>
+
+  <MODULES>
+    <MODULE FULLNAME="/cfd_0" HWVERSION="1.0" INSTANCE="cfd_0" IPTYPE="PERIPHERAL" IS_ENABLE="1" MODCLASS="PERIPHERAL" MODTYPE="cfd" VLNV="xilinx.com:module_ref:cfd:1.0">
+      <DOCUMENTS/>
+      <PARAMETERS>
+        <PARAMETER NAME="DELAY_SAMPLES" VALUE="100"/>
+        <PARAMETER NAME="INV_FRAC" VALUE="8"/>
+        <PARAMETER NAME="SIZE" VALUE="8"/>
+        <PARAMETER NAME="Component_Name" VALUE="design_1_cfd_0_0"/>
+        <PARAMETER NAME="EDK_IPTYPE" VALUE="PERIPHERAL"/>
+      </PARAMETERS>
+      <PORTS>
+        <PORT CLKFREQUENCY="125000000" DIR="I" NAME="clk" SIGIS="clk" SIGNAME="External_Ports_adc_clk_n_i">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="External_Ports" PORT="adc_clk_n_i"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" LEFT="7" NAME="x" RIGHT="0" SIGIS="undef" SIGNAME="lp_filter_2_0_y">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="lp_filter_2_0" PORT="y"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" LEFT="7" NAME="y" RIGHT="0" SIGIS="undef" SIGNAME="cfd_0_y">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="zero_detector_0" PORT="x"/>
+          </CONNECTIONS>
+        </PORT>
+      </PORTS>
+      <BUSINTERFACES/>
+    </MODULE>
+    <MODULE FULLNAME="/lp_filter_2_0" HWVERSION="1.0" INSTANCE="lp_filter_2_0" IPTYPE="PERIPHERAL" IS_ENABLE="1" MODCLASS="PERIPHERAL" MODTYPE="lp_filter_2" VLNV="xilinx.com:module_ref:lp_filter_2:1.0">
+      <DOCUMENTS/>
+      <PARAMETERS>
+        <PARAMETER NAME="DECAY_FULL_POWER" VALUE="10"/>
+        <PARAMETER NAME="DECAY_PART" VALUE="900"/>
+        <PARAMETER NAME="SIZE" VALUE="8"/>
+        <PARAMETER NAME="Component_Name" VALUE="design_1_lp_filter_2_0_0"/>
+        <PARAMETER NAME="EDK_IPTYPE" VALUE="PERIPHERAL"/>
+      </PARAMETERS>
+      <PORTS>
+        <PORT CLKFREQUENCY="125000000" DIR="I" LEFT="0" NAME="clk" RIGHT="0" SIGIS="clk" SIGNAME="External_Ports_adc_clk_n_i">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="External_Ports" PORT="adc_clk_n_i"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" LEFT="7" NAME="x" RIGHT="0" SIGIS="undef" SIGNAME="External_Ports_MF_out">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="External_Ports" PORT="MF_out"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" LEFT="7" NAME="y" RIGHT="0" SIGIS="undef" SIGNAME="lp_filter_2_0_y">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="cfd_0" PORT="x"/>
+          </CONNECTIONS>
+        </PORT>
+      </PORTS>
+      <BUSINTERFACES/>
+    </MODULE>
+    <MODULE FULLNAME="/zero_detector_0" HWVERSION="1.0" INSTANCE="zero_detector_0" IPTYPE="PERIPHERAL" IS_ENABLE="1" MODCLASS="PERIPHERAL" MODTYPE="zero_detector" VLNV="xilinx.com:module_ref:zero_detector:1.0">
+      <DOCUMENTS/>
+      <PARAMETERS>
+        <PARAMETER NAME="SIZE" VALUE="8"/>
+        <PARAMETER NAME="Component_Name" VALUE="design_1_zero_detector_0_0"/>
+        <PARAMETER NAME="EDK_IPTYPE" VALUE="PERIPHERAL"/>
+      </PARAMETERS>
+      <PORTS>
+        <PORT CLKFREQUENCY="125000000" DIR="I" LEFT="0" NAME="clk" RIGHT="0" SIGIS="clk" SIGNAME="External_Ports_adc_clk_n_i">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="External_Ports" PORT="adc_clk_n_i"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" LEFT="7" NAME="x" RIGHT="0" SIGIS="undef" SIGNAME="cfd_0_y">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="cfd_0" PORT="y"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" NAME="y" SIGIS="undef" SIGNAME="zero_detector_0_y">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="External_Ports" PORT="record_data"/>
+          </CONNECTIONS>
+        </PORT>
+      </PORTS>
+      <BUSINTERFACES/>
+    </MODULE>
+  </MODULES>
+
+</EDKSYSTEM>

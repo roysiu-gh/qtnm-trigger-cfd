@@ -1,0 +1,16 @@
+Vivado Simulator 2016.3
+Copyright 1986-1999, 2001-2016 Xilinx, Inc. All Rights Reserved.
+Running: C:/Xilinx/Vivado/2016.3/bin/unwrapped/win64.o/xelab.exe -wto 3cfd85acaa3d4b2f8b9f0bd4bedb0c38 --debug typical --relax --mt 2 -L xil_defaultlib -L unisims_ver -L unimacro_ver -L secureip -L xpm --snapshot lp_cfd_zd_tb_behav xil_defaultlib.lp_cfd_zd_tb xil_defaultlib.glbl -log elaborate.log 
+Using 2 slave threads.
+Starting static elaboration
+Completed static elaboration
+Starting simulation data flow analysis
+Completed simulation data flow analysis
+Time Resolution for simulation is 1ps
+Compiling module xil_defaultlib.lp_filter_2(SIZE=32)
+Compiling module xil_defaultlib.cfd(DELAY_SAMPLES=200,SIZE=32)
+Compiling module xil_defaultlib.zero_detector(SIZE=32)
+Compiling module xil_defaultlib.lp_cfd_zd_tb
+WARNING: [XSIM 43-3373] "C:/Users/roysi/Files/URSS/qtnm-trigger-cfd/qtnm-trigger-cfd-verilog/qtnm-trigger-cfd-verilog.srcs/sim_1/new/lp_cfd_zd_tb.v" Line 46. System function $fscanf is used as system task. This system function should have a LHS e.g. x=$fscanf().
+Compiling module xil_defaultlib.glbl
+Built simulation snapshot lp_cfd_zd_tb_behav

@@ -1,0 +1,354 @@
+
+*** Running vivado
+    with args -log design_1_cfd_0_0.vds -m64 -product Vivado -mode batch -messageDb vivado.pb -notrace -source design_1_cfd_0_0.tcl
+
+
+****** Vivado v2016.3 (64-bit)
+  **** SW Build 1682563 on Mon Oct 10 19:07:27 MDT 2016
+  **** IP Build 1681267 on Mon Oct 10 21:28:31 MDT 2016
+    ** Copyright 1986-2016 Xilinx, Inc. All Rights Reserved.
+
+source design_1_cfd_0_0.tcl -notrace
+Command: synth_design -top design_1_cfd_0_0 -part xc7z010clg400-1 -mode out_of_context
+Starting synth_design
+Attempting to get a license for feature 'Synthesis' and/or device 'xc7z010'
+INFO: [Common 17-349] Got license for feature 'Synthesis' and/or device 'xc7z010'
+INFO: Launching helper process for spawning children vivado processes
+INFO: Helper process launched with PID 23032 
+---------------------------------------------------------------------------------
+Starting Synthesize : Time (s): cpu = 00:00:02 ; elapsed = 00:00:06 . Memory (MB): peak = 296.688 ; gain = 86.582
+---------------------------------------------------------------------------------
+INFO: [Synth 8-638] synthesizing module 'design_1_cfd_0_0' [c:/Users/roysi/Files/URSS/Verilog/Practice/Practice.srcs/sources_1/bd/design_1/ip/design_1_cfd_0_0_1/synth/design_1_cfd_0_0.v:57]
+INFO: [Synth 8-638] synthesizing module 'cfd' [C:/Users/roysi/Files/URSS/Verilog/Practice/Practice.srcs/sources_1/new/cfd.v:23]
+	Parameter DELAY_SAMPLES bound to: 100 - type: integer 
+	Parameter INV_FRAC bound to: 8 - type: integer 
+	Parameter SIZE bound to: 8 - type: integer 
+INFO: [Synth 8-256] done synthesizing module 'cfd' (1#1) [C:/Users/roysi/Files/URSS/Verilog/Practice/Practice.srcs/sources_1/new/cfd.v:23]
+INFO: [Synth 8-256] done synthesizing module 'design_1_cfd_0_0' (2#1) [c:/Users/roysi/Files/URSS/Verilog/Practice/Practice.srcs/sources_1/bd/design_1/ip/design_1_cfd_0_0_1/synth/design_1_cfd_0_0.v:57]
+---------------------------------------------------------------------------------
+Finished Synthesize : Time (s): cpu = 00:00:02 ; elapsed = 00:00:07 . Memory (MB): peak = 334.152 ; gain = 124.047
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Finished Constraint Validation : Time (s): cpu = 00:00:02 ; elapsed = 00:00:07 . Memory (MB): peak = 334.152 ; gain = 124.047
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start Loading Part and Timing Information
+---------------------------------------------------------------------------------
+Loading part: xc7z010clg400-1
+---------------------------------------------------------------------------------
+Finished Loading Part and Timing Information : Time (s): cpu = 00:00:02 ; elapsed = 00:00:07 . Memory (MB): peak = 334.152 ; gain = 124.047
+---------------------------------------------------------------------------------
+INFO: [Device 21-403] Loading part xc7z010clg400-1
+---------------------------------------------------------------------------------
+Finished RTL Optimization Phase 2 : Time (s): cpu = 00:00:02 ; elapsed = 00:00:07 . Memory (MB): peak = 341.109 ; gain = 131.004
+---------------------------------------------------------------------------------
+
+Report RTL Partitions: 
++-+--------------+------------+----------+
+| |RTL Partition |Replication |Instances |
++-+--------------+------------+----------+
++-+--------------+------------+----------+
+No constraint files found.
+---------------------------------------------------------------------------------
+Start RTL Component Statistics 
+---------------------------------------------------------------------------------
+Detailed RTL Component Info : 
++---Registers : 
+	                8 Bit    Registers := 101   
+---------------------------------------------------------------------------------
+Finished RTL Component Statistics 
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start RTL Hierarchical Component Statistics 
+---------------------------------------------------------------------------------
+Hierarchical RTL Component report 
+Module cfd 
+Detailed RTL Component Info : 
++---Registers : 
+	                8 Bit    Registers := 101   
+---------------------------------------------------------------------------------
+Finished RTL Hierarchical Component Statistics
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start Part Resource Summary
+---------------------------------------------------------------------------------
+Part Resources:
+DSPs: 80 (col length:40)
+BRAMs: 120 (col length: RAMB18 40 RAMB36 20)
+---------------------------------------------------------------------------------
+Finished Part Resource Summary
+---------------------------------------------------------------------------------
+No constraint files found.
+---------------------------------------------------------------------------------
+Start Cross Boundary and Area Optimization
+---------------------------------------------------------------------------------
+INFO: [Synth 8-3886] merging instance 'inst/buffer_reg[0][0]' (FD) to 'inst/y_reg[0]'
+INFO: [Synth 8-3886] merging instance 'inst/buffer_reg[0][1]' (FD) to 'inst/y_reg[1]'
+INFO: [Synth 8-3332] Sequential element (inst/buffer_reg[0][7]) is unused and will be removed from module design_1_cfd_0_0.
+INFO: [Synth 8-3332] Sequential element (inst/buffer_reg[0][6]) is unused and will be removed from module design_1_cfd_0_0.
+INFO: [Synth 8-3332] Sequential element (inst/buffer_reg[0][5]) is unused and will be removed from module design_1_cfd_0_0.
+INFO: [Synth 8-3332] Sequential element (inst/buffer_reg[1][7]) is unused and will be removed from module design_1_cfd_0_0.
+INFO: [Synth 8-3332] Sequential element (inst/buffer_reg[1][6]) is unused and will be removed from module design_1_cfd_0_0.
+INFO: [Synth 8-3332] Sequential element (inst/buffer_reg[1][5]) is unused and will be removed from module design_1_cfd_0_0.
+INFO: [Synth 8-3332] Sequential element (inst/buffer_reg[2][7]) is unused and will be removed from module design_1_cfd_0_0.
+INFO: [Synth 8-3332] Sequential element (inst/buffer_reg[2][6]) is unused and will be removed from module design_1_cfd_0_0.
+INFO: [Synth 8-3332] Sequential element (inst/buffer_reg[2][5]) is unused and will be removed from module design_1_cfd_0_0.
+INFO: [Synth 8-3332] Sequential element (inst/buffer_reg[3][7]) is unused and will be removed from module design_1_cfd_0_0.
+INFO: [Synth 8-3332] Sequential element (inst/buffer_reg[3][6]) is unused and will be removed from module design_1_cfd_0_0.
+INFO: [Synth 8-3332] Sequential element (inst/buffer_reg[3][5]) is unused and will be removed from module design_1_cfd_0_0.
+INFO: [Synth 8-3332] Sequential element (inst/buffer_reg[4][7]) is unused and will be removed from module design_1_cfd_0_0.
+INFO: [Synth 8-3332] Sequential element (inst/buffer_reg[4][6]) is unused and will be removed from module design_1_cfd_0_0.
+INFO: [Synth 8-3332] Sequential element (inst/buffer_reg[4][5]) is unused and will be removed from module design_1_cfd_0_0.
+INFO: [Synth 8-3332] Sequential element (inst/buffer_reg[5][7]) is unused and will be removed from module design_1_cfd_0_0.
+INFO: [Synth 8-3332] Sequential element (inst/buffer_reg[5][6]) is unused and will be removed from module design_1_cfd_0_0.
+INFO: [Synth 8-3332] Sequential element (inst/buffer_reg[5][5]) is unused and will be removed from module design_1_cfd_0_0.
+INFO: [Synth 8-3332] Sequential element (inst/buffer_reg[6][7]) is unused and will be removed from module design_1_cfd_0_0.
+INFO: [Synth 8-3332] Sequential element (inst/buffer_reg[6][6]) is unused and will be removed from module design_1_cfd_0_0.
+INFO: [Synth 8-3332] Sequential element (inst/buffer_reg[6][5]) is unused and will be removed from module design_1_cfd_0_0.
+INFO: [Synth 8-3332] Sequential element (inst/buffer_reg[7][7]) is unused and will be removed from module design_1_cfd_0_0.
+INFO: [Synth 8-3332] Sequential element (inst/buffer_reg[7][6]) is unused and will be removed from module design_1_cfd_0_0.
+INFO: [Synth 8-3332] Sequential element (inst/buffer_reg[7][5]) is unused and will be removed from module design_1_cfd_0_0.
+INFO: [Synth 8-3332] Sequential element (inst/buffer_reg[8][7]) is unused and will be removed from module design_1_cfd_0_0.
+INFO: [Synth 8-3332] Sequential element (inst/buffer_reg[8][6]) is unused and will be removed from module design_1_cfd_0_0.
+INFO: [Synth 8-3332] Sequential element (inst/buffer_reg[8][5]) is unused and will be removed from module design_1_cfd_0_0.
+INFO: [Synth 8-3332] Sequential element (inst/buffer_reg[9][7]) is unused and will be removed from module design_1_cfd_0_0.
+INFO: [Synth 8-3332] Sequential element (inst/buffer_reg[9][6]) is unused and will be removed from module design_1_cfd_0_0.
+INFO: [Synth 8-3332] Sequential element (inst/buffer_reg[9][5]) is unused and will be removed from module design_1_cfd_0_0.
+INFO: [Synth 8-3332] Sequential element (inst/buffer_reg[10][7]) is unused and will be removed from module design_1_cfd_0_0.
+INFO: [Synth 8-3332] Sequential element (inst/buffer_reg[10][6]) is unused and will be removed from module design_1_cfd_0_0.
+INFO: [Synth 8-3332] Sequential element (inst/buffer_reg[10][5]) is unused and will be removed from module design_1_cfd_0_0.
+INFO: [Synth 8-3332] Sequential element (inst/buffer_reg[11][7]) is unused and will be removed from module design_1_cfd_0_0.
+INFO: [Synth 8-3332] Sequential element (inst/buffer_reg[11][6]) is unused and will be removed from module design_1_cfd_0_0.
+INFO: [Synth 8-3332] Sequential element (inst/buffer_reg[11][5]) is unused and will be removed from module design_1_cfd_0_0.
+INFO: [Synth 8-3332] Sequential element (inst/buffer_reg[12][7]) is unused and will be removed from module design_1_cfd_0_0.
+INFO: [Synth 8-3332] Sequential element (inst/buffer_reg[12][6]) is unused and will be removed from module design_1_cfd_0_0.
+INFO: [Synth 8-3332] Sequential element (inst/buffer_reg[12][5]) is unused and will be removed from module design_1_cfd_0_0.
+INFO: [Synth 8-3332] Sequential element (inst/buffer_reg[13][7]) is unused and will be removed from module design_1_cfd_0_0.
+INFO: [Synth 8-3332] Sequential element (inst/buffer_reg[13][6]) is unused and will be removed from module design_1_cfd_0_0.
+INFO: [Synth 8-3332] Sequential element (inst/buffer_reg[13][5]) is unused and will be removed from module design_1_cfd_0_0.
+INFO: [Synth 8-3332] Sequential element (inst/buffer_reg[14][7]) is unused and will be removed from module design_1_cfd_0_0.
+INFO: [Synth 8-3332] Sequential element (inst/buffer_reg[14][6]) is unused and will be removed from module design_1_cfd_0_0.
+INFO: [Synth 8-3332] Sequential element (inst/buffer_reg[14][5]) is unused and will be removed from module design_1_cfd_0_0.
+INFO: [Synth 8-3332] Sequential element (inst/buffer_reg[15][7]) is unused and will be removed from module design_1_cfd_0_0.
+INFO: [Synth 8-3332] Sequential element (inst/buffer_reg[15][6]) is unused and will be removed from module design_1_cfd_0_0.
+INFO: [Synth 8-3332] Sequential element (inst/buffer_reg[15][5]) is unused and will be removed from module design_1_cfd_0_0.
+INFO: [Synth 8-3332] Sequential element (inst/buffer_reg[16][7]) is unused and will be removed from module design_1_cfd_0_0.
+INFO: [Synth 8-3332] Sequential element (inst/buffer_reg[16][6]) is unused and will be removed from module design_1_cfd_0_0.
+INFO: [Synth 8-3332] Sequential element (inst/buffer_reg[16][5]) is unused and will be removed from module design_1_cfd_0_0.
+INFO: [Synth 8-3332] Sequential element (inst/buffer_reg[17][7]) is unused and will be removed from module design_1_cfd_0_0.
+INFO: [Synth 8-3332] Sequential element (inst/buffer_reg[17][6]) is unused and will be removed from module design_1_cfd_0_0.
+INFO: [Synth 8-3332] Sequential element (inst/buffer_reg[17][5]) is unused and will be removed from module design_1_cfd_0_0.
+INFO: [Synth 8-3332] Sequential element (inst/buffer_reg[18][7]) is unused and will be removed from module design_1_cfd_0_0.
+INFO: [Synth 8-3332] Sequential element (inst/buffer_reg[18][6]) is unused and will be removed from module design_1_cfd_0_0.
+INFO: [Synth 8-3332] Sequential element (inst/buffer_reg[18][5]) is unused and will be removed from module design_1_cfd_0_0.
+INFO: [Synth 8-3332] Sequential element (inst/buffer_reg[19][7]) is unused and will be removed from module design_1_cfd_0_0.
+INFO: [Synth 8-3332] Sequential element (inst/buffer_reg[19][6]) is unused and will be removed from module design_1_cfd_0_0.
+INFO: [Synth 8-3332] Sequential element (inst/buffer_reg[19][5]) is unused and will be removed from module design_1_cfd_0_0.
+INFO: [Synth 8-3332] Sequential element (inst/buffer_reg[20][7]) is unused and will be removed from module design_1_cfd_0_0.
+INFO: [Synth 8-3332] Sequential element (inst/buffer_reg[20][6]) is unused and will be removed from module design_1_cfd_0_0.
+INFO: [Synth 8-3332] Sequential element (inst/buffer_reg[20][5]) is unused and will be removed from module design_1_cfd_0_0.
+INFO: [Synth 8-3332] Sequential element (inst/buffer_reg[21][7]) is unused and will be removed from module design_1_cfd_0_0.
+INFO: [Synth 8-3332] Sequential element (inst/buffer_reg[21][6]) is unused and will be removed from module design_1_cfd_0_0.
+INFO: [Synth 8-3332] Sequential element (inst/buffer_reg[21][5]) is unused and will be removed from module design_1_cfd_0_0.
+INFO: [Synth 8-3332] Sequential element (inst/buffer_reg[22][7]) is unused and will be removed from module design_1_cfd_0_0.
+INFO: [Synth 8-3332] Sequential element (inst/buffer_reg[22][6]) is unused and will be removed from module design_1_cfd_0_0.
+INFO: [Synth 8-3332] Sequential element (inst/buffer_reg[22][5]) is unused and will be removed from module design_1_cfd_0_0.
+INFO: [Synth 8-3332] Sequential element (inst/buffer_reg[23][7]) is unused and will be removed from module design_1_cfd_0_0.
+INFO: [Synth 8-3332] Sequential element (inst/buffer_reg[23][6]) is unused and will be removed from module design_1_cfd_0_0.
+INFO: [Synth 8-3332] Sequential element (inst/buffer_reg[23][5]) is unused and will be removed from module design_1_cfd_0_0.
+INFO: [Synth 8-3332] Sequential element (inst/buffer_reg[24][7]) is unused and will be removed from module design_1_cfd_0_0.
+INFO: [Synth 8-3332] Sequential element (inst/buffer_reg[24][6]) is unused and will be removed from module design_1_cfd_0_0.
+INFO: [Synth 8-3332] Sequential element (inst/buffer_reg[24][5]) is unused and will be removed from module design_1_cfd_0_0.
+INFO: [Synth 8-3332] Sequential element (inst/buffer_reg[25][7]) is unused and will be removed from module design_1_cfd_0_0.
+INFO: [Synth 8-3332] Sequential element (inst/buffer_reg[25][6]) is unused and will be removed from module design_1_cfd_0_0.
+INFO: [Synth 8-3332] Sequential element (inst/buffer_reg[25][5]) is unused and will be removed from module design_1_cfd_0_0.
+INFO: [Synth 8-3332] Sequential element (inst/buffer_reg[26][7]) is unused and will be removed from module design_1_cfd_0_0.
+INFO: [Synth 8-3332] Sequential element (inst/buffer_reg[26][6]) is unused and will be removed from module design_1_cfd_0_0.
+INFO: [Synth 8-3332] Sequential element (inst/buffer_reg[26][5]) is unused and will be removed from module design_1_cfd_0_0.
+INFO: [Synth 8-3332] Sequential element (inst/buffer_reg[27][7]) is unused and will be removed from module design_1_cfd_0_0.
+INFO: [Synth 8-3332] Sequential element (inst/buffer_reg[27][6]) is unused and will be removed from module design_1_cfd_0_0.
+INFO: [Synth 8-3332] Sequential element (inst/buffer_reg[27][5]) is unused and will be removed from module design_1_cfd_0_0.
+INFO: [Synth 8-3332] Sequential element (inst/buffer_reg[28][7]) is unused and will be removed from module design_1_cfd_0_0.
+INFO: [Synth 8-3332] Sequential element (inst/buffer_reg[28][6]) is unused and will be removed from module design_1_cfd_0_0.
+INFO: [Synth 8-3332] Sequential element (inst/buffer_reg[28][5]) is unused and will be removed from module design_1_cfd_0_0.
+INFO: [Synth 8-3332] Sequential element (inst/buffer_reg[29][7]) is unused and will be removed from module design_1_cfd_0_0.
+INFO: [Synth 8-3332] Sequential element (inst/buffer_reg[29][6]) is unused and will be removed from module design_1_cfd_0_0.
+INFO: [Synth 8-3332] Sequential element (inst/buffer_reg[29][5]) is unused and will be removed from module design_1_cfd_0_0.
+INFO: [Synth 8-3332] Sequential element (inst/buffer_reg[30][7]) is unused and will be removed from module design_1_cfd_0_0.
+INFO: [Synth 8-3332] Sequential element (inst/buffer_reg[30][6]) is unused and will be removed from module design_1_cfd_0_0.
+INFO: [Synth 8-3332] Sequential element (inst/buffer_reg[30][5]) is unused and will be removed from module design_1_cfd_0_0.
+INFO: [Synth 8-3332] Sequential element (inst/buffer_reg[31][7]) is unused and will be removed from module design_1_cfd_0_0.
+INFO: [Synth 8-3332] Sequential element (inst/buffer_reg[31][6]) is unused and will be removed from module design_1_cfd_0_0.
+INFO: [Synth 8-3332] Sequential element (inst/buffer_reg[31][5]) is unused and will be removed from module design_1_cfd_0_0.
+INFO: [Synth 8-3332] Sequential element (inst/buffer_reg[32][7]) is unused and will be removed from module design_1_cfd_0_0.
+INFO: [Synth 8-3332] Sequential element (inst/buffer_reg[32][6]) is unused and will be removed from module design_1_cfd_0_0.
+INFO: [Synth 8-3332] Sequential element (inst/buffer_reg[32][5]) is unused and will be removed from module design_1_cfd_0_0.
+INFO: [Synth 8-3332] Sequential element (inst/buffer_reg[33][7]) is unused and will be removed from module design_1_cfd_0_0.
+INFO: [Common 17-14] Message 'Synth 8-3332' appears 100 times and further instances of the messages will be disabled. Use the Tcl command set_msg_config to change the current settings.
+---------------------------------------------------------------------------------
+Finished Cross Boundary and Area Optimization : Time (s): cpu = 00:00:03 ; elapsed = 00:00:12 . Memory (MB): peak = 466.828 ; gain = 256.723
+---------------------------------------------------------------------------------
+
+Report RTL Partitions: 
++-+--------------+------------+----------+
+| |RTL Partition |Replication |Instances |
++-+--------------+------------+----------+
++-+--------------+------------+----------+
+---------------------------------------------------------------------------------
+Start Timing Optimization
+---------------------------------------------------------------------------------
+No constraint files found.
+---------------------------------------------------------------------------------
+Finished Timing Optimization : Time (s): cpu = 00:00:03 ; elapsed = 00:00:12 . Memory (MB): peak = 466.828 ; gain = 256.723
+---------------------------------------------------------------------------------
+
+Report RTL Partitions: 
++-+--------------+------------+----------+
+| |RTL Partition |Replication |Instances |
++-+--------------+------------+----------+
++-+--------------+------------+----------+
+---------------------------------------------------------------------------------
+Start Technology Mapping
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Finished Technology Mapping : Time (s): cpu = 00:00:03 ; elapsed = 00:00:12 . Memory (MB): peak = 476.891 ; gain = 266.785
+---------------------------------------------------------------------------------
+
+Report RTL Partitions: 
++-+--------------+------------+----------+
+| |RTL Partition |Replication |Instances |
++-+--------------+------------+----------+
++-+--------------+------------+----------+
+---------------------------------------------------------------------------------
+Start IO Insertion
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start Flattening Before IO Insertion
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Finished Flattening Before IO Insertion
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start Final Netlist Cleanup
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Finished Final Netlist Cleanup
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Finished IO Insertion : Time (s): cpu = 00:00:04 ; elapsed = 00:00:13 . Memory (MB): peak = 476.891 ; gain = 266.785
+---------------------------------------------------------------------------------
+
+Report Check Netlist: 
++------+------------------+-------+---------+-------+------------------+
+|      |Item              |Errors |Warnings |Status |Description       |
++------+------------------+-------+---------+-------+------------------+
+|1     |multi_driven_nets |      0|        0|Passed |Multi driven nets |
++------+------------------+-------+---------+-------+------------------+
+---------------------------------------------------------------------------------
+Start Renaming Generated Instances
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Finished Renaming Generated Instances : Time (s): cpu = 00:00:04 ; elapsed = 00:00:13 . Memory (MB): peak = 476.891 ; gain = 266.785
+---------------------------------------------------------------------------------
+
+Report RTL Partitions: 
++-+--------------+------------+----------+
+| |RTL Partition |Replication |Instances |
++-+--------------+------------+----------+
++-+--------------+------------+----------+
+---------------------------------------------------------------------------------
+Start Rebuilding User Hierarchy
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Finished Rebuilding User Hierarchy : Time (s): cpu = 00:00:04 ; elapsed = 00:00:13 . Memory (MB): peak = 476.891 ; gain = 266.785
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start Renaming Generated Ports
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Finished Renaming Generated Ports : Time (s): cpu = 00:00:04 ; elapsed = 00:00:13 . Memory (MB): peak = 476.891 ; gain = 266.785
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start Handling Custom Attributes
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Finished Handling Custom Attributes : Time (s): cpu = 00:00:04 ; elapsed = 00:00:13 . Memory (MB): peak = 476.891 ; gain = 266.785
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start Renaming Generated Nets
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Finished Renaming Generated Nets : Time (s): cpu = 00:00:04 ; elapsed = 00:00:13 . Memory (MB): peak = 476.891 ; gain = 266.785
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start ROM, RAM, DSP and Shift Register Reporting
+---------------------------------------------------------------------------------
+
+Static Shift Register Report:
++-----------------+------------------------+--------+-------+--------------+--------------------+-------------------+--------+---------+
+|Module Name      | RTL Name               | Length | Width | Reset Signal | Pull out first Reg | Pull out last Reg | SRL16E | SRLC32E | 
++-----------------+------------------------+--------+-------+--------------+--------------------+-------------------+--------+---------+
+|design_1_cfd_0_0 | inst/buffer_reg[99][4] | 100    | 3     | NO           | NO                 | YES               | 0      | 12      | 
+|design_1_cfd_0_0 | inst/buffer_reg[99][1] | 99     | 2     | NO           | NO                 | YES               | 0      | 8       | 
++-----------------+------------------------+--------+-------+--------------+--------------------+-------------------+--------+---------+
+
+---------------------------------------------------------------------------------
+Finished ROM, RAM, DSP and Shift Register Reporting
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start Writing Synthesis Report
+---------------------------------------------------------------------------------
+
+Report BlackBoxes: 
++-+--------------+----------+
+| |BlackBox name |Instances |
++-+--------------+----------+
++-+--------------+----------+
+
+Report Cell Usage: 
++------+--------+------+
+|      |Cell    |Count |
++------+--------+------+
+|1     |CARRY4  |     2|
+|2     |LUT1    |     1|
+|3     |LUT2    |     1|
+|4     |LUT3    |     1|
+|5     |LUT4    |     1|
+|6     |LUT5    |     1|
+|7     |LUT6    |     1|
+|8     |SRLC32E |    20|
+|9     |FDRE    |    13|
++------+--------+------+
+
+Report Instance Areas: 
++------+---------+-------+------+
+|      |Instance |Module |Cells |
++------+---------+-------+------+
+|1     |top      |       |    41|
+|2     |  inst   |cfd    |    41|
++------+---------+-------+------+
+---------------------------------------------------------------------------------
+Finished Writing Synthesis Report : Time (s): cpu = 00:00:04 ; elapsed = 00:00:13 . Memory (MB): peak = 476.891 ; gain = 266.785
+---------------------------------------------------------------------------------
+Synthesis finished with 0 errors, 0 critical warnings and 0 warnings.
+Synthesis Optimization Runtime : Time (s): cpu = 00:00:03 ; elapsed = 00:00:10 . Memory (MB): peak = 476.891 ; gain = 258.551
+Synthesis Optimization Complete : Time (s): cpu = 00:00:04 ; elapsed = 00:00:13 . Memory (MB): peak = 476.891 ; gain = 266.785
+INFO: [Project 1-571] Translating synthesized netlist
+INFO: [Netlist 29-17] Analyzing 2 Unisim elements for replacement
+INFO: [Netlist 29-28] Unisim Transformation completed in 0 CPU seconds
+INFO: [Project 1-570] Preparing netlist for logic optimization
+INFO: [Opt 31-138] Pushed 0 inverter(s) to 0 load pin(s).
+INFO: [Project 1-111] Unisim Transformation Summary:
+  A total of 5 instances were transformed.
+  SRLC32E => SRL16E: 5 instances
+
+INFO: [Common 17-83] Releasing license: Synthesis
+120 Infos, 0 Warnings, 0 Critical Warnings and 0 Errors encountered.
+synth_design completed successfully
+synth_design: Time (s): cpu = 00:00:03 ; elapsed = 00:00:12 . Memory (MB): peak = 545.977 ; gain = 330.648
+INFO: [Timing 38-35] Done setting XDC timing constraints.
+INFO: [Common 17-1381] The checkpoint 'C:/Users/roysi/Files/URSS/Verilog/Practice/Practice.runs/design_1_cfd_0_0_synth_1/design_1_cfd_0_0.dcp' has been generated.
+write_checkpoint: Time (s): cpu = 00:00:06 ; elapsed = 00:00:15 . Memory (MB): peak = 974.125 ; gain = 428.148
+INFO: [Common 17-1381] The checkpoint 'C:/Users/roysi/Files/URSS/Verilog/Practice/Practice.runs/design_1_cfd_0_0_synth_1/design_1_cfd_0_0.dcp' has been generated.
+report_utilization: Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.016 . Memory (MB): peak = 974.551 ; gain = 0.000
+INFO: [Common 17-206] Exiting Vivado at Sat Aug 12 16:27:05 2023...
