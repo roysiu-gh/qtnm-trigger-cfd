@@ -1,9 +1,15 @@
-# Simulated functions written as generators to closer replicate the description in Verilog
+"""Most functions that could be written in Verilog are written here as generators to closer replicate Verilog
+description. Numba compilation is used to speed up some functions. `XXX_wrapper` functions return the corresponding
+function with all parameters preset, so that only the input series `x_all` is required. `XXX_extracted` functions
+exist because Numba doesn't support the **kwargs construct. They ignore arguments irrelevant (hard-coded) to the
+wrapped functions, and return the output of the wrapped function. The type hint `NDArray[(Any,), np.int32]` means a
+1D Numpy array of Numpy integers."""
+from typing import Iterator, Any, Callable
 
 import numpy as np
-from numba import jit
-
 import pkg_resources
+from nptyping import NDArray
+from numba import jit
 
 __requires__ = "numpy==1.24"  # For numba
 
@@ -20,7 +26,8 @@ TIME_DURATION_UNITS = (
 )
 
 
-def human_time(seconds):
+def human_time(seconds: int) -> str:
+    """Convert seconds to a human-readable time duration."""
     seconds = int(seconds)
     if seconds == 0:
         return 'inf'
@@ -33,36 +40,47 @@ def human_time(seconds):
 
 
 # @jit(nopython=True)
-def no_filter(x_all, *args, **kwargs):
+def no_filter(x_all: NDArray[(Any,), np.int32], *args, **kwargs) -> Iterator[int]:
+    """The identity filter.
+    
+    :param x_all: The input signal. 
+    :param args: Ignored.
+    :param kwargs: Ignored.
+    :return: The input unchanged.
+    """
     for x in x_all:
         yield x
 
 
 @jit(nopython=True)
-def lp_filter_iir(x_all, DECAY_FULL_POWER=10, decay_part=900):
-    """ Low-pass IIR filter simulation of Verilog implementation
-    Write as a generator to simulate verilog functionality
-    Default DECAY_FULL_POWER = 10 so that DECAY_FULL = 1024
-    Cannot parallelise
+def lp_filter_iir(x_all: NDArray[(Any,), np.int32], decay_full_power: int = 10, decay_part: int = 900) -> Iterator[int]:
+    """Low-pass IIR filter simulation of Verilog implementation.
+    Written as a generator to simulate verilog functionality.
+    Default `decay_full_power = 10` so that `decay_full = 2 ** decay_full_power = 1024`.
+    Cannot parallelise.
+
+    :param x_all: The input signal. 
+    :param decay_full_power: <>
+    :param decay_part: <>
+    :return: Filtered result.
     """
-    a = (2 ** DECAY_FULL_POWER) - decay_part
+    a = (2 ** decay_full_power) - decay_part
     b = decay_part
 
     last_y = 0
 
     for x in x_all:  # always @ (posedge clk)
         y = (a * x) + (b * last_y)
-        y = y >> DECAY_FULL_POWER  # Arithmetic shift to divide by DECAY_FULL
+        y = y >> decay_full_power  # Arithmetic shift to divide by decay_full
         last_y = y
         yield y
 
 
-def lp_filter_iir_extracted(x_all, **kwargs):
-    """ A wrapper for lp_filter_iir() as Numba doesn't support the **kwargs construct. Ignore irrelevant arguments.
-    """
+def lp_filter_iir_extracted(x_all: NDArray[(Any,), np.int32], **kwargs) -> Iterator[int]:
+    """An 'extracted' wrapper for lp_filter_iir()."""
     relevant_kwargs = {}
-    if "DECAY_FULL_POWER" in kwargs:
-        relevant_kwargs["DECAY_FULL_POWER"] = kwargs["DECAY_FULL_POWER"]
+    if "decay_full_power" in kwargs:
+        relevant_kwargs["decay_full_power"] = kwargs["decay_full_power"]
     if "decay_part" in kwargs:
         relevant_kwargs["decay_part"] = kwargs["decay_part"]
 
@@ -70,26 +88,28 @@ def lp_filter_iir_extracted(x_all, **kwargs):
         yield y
 
 
-def lp_filter_iir_wrapper(DECAY_FULL_POWER=10, decay_part=900):
-    """Return an instance of lp_filter_iir() with DECAY_FULL_POWER and DECAY_PART preset."""
+def lp_filter_iir_wrapper(decay_full_power: int = 10, decay_part: int = 900) -> Callable:
+    """Return an instance of lp_filter_iir() with decay_full_power and decay_part preset."""
 
     @jit(nopython=True)
     def inner(x_all):
-        return lp_filter_iir(x_all, DECAY_FULL_POWER=DECAY_FULL_POWER, decay_part=decay_part)
+        return lp_filter_iir(x_all, decay_full_power=decay_full_power, decay_part=decay_part)
 
     return inner
 
 
-def sma_convolve(x_all, window_width=100):
+def sma_convolve(x_all: NDArray[(Any,), np.int32], window_width: int = 100) -> NDArray[(Any,), np.int32]:
     """Simple moving average filter using convolution, NOT Verilog implementation.
-    `window_width` is window size in samples
+
+    :param x_all: The input signal. 
+    :param window_width: The window size in samples.
+    :return: Filtered result.
     """
     return np.convolve(x_all, np.ones(window_width), "same") / window_width
 
 
-def sma_convolve_extracted(x_all, **kwargs):
-    """ A wrapper for sma_convolve() as Numba doesn't support the **kwargs construct. Ignore irrelevant arguments.
-    """
+def sma_convolve_extracted(x_all: NDArray[(Any,), np.int32], **kwargs) -> Iterator[int]:
+    """An 'extracted' wrapper for sma_convolve()."""
     relevant_kwargs = {}
     if "window_width" in kwargs:
         relevant_kwargs["window_width"] = kwargs["window_width"]
@@ -98,18 +118,20 @@ def sma_convolve_extracted(x_all, **kwargs):
         yield y
 
 
-def wma_linear_convolve(x_all, window_width=100):
-    """(Linearly) weighted moving average filter
-    `n` is window size in samples
+def wma_linear_convolve(x_all: NDArray[(Any,), np.int32], window_width: int = 100) -> NDArray[(Any,), np.int32]:
+    """(Linearly) weighted moving average filter.
+
+    :param x_all: The input signal.
+    :param window_width: The window size in samples.
+    :return: Filtered result.
     """
     weights = np.arange(window_width)
     total = (window_width - 1) * window_width / 2  # n -> n-1
     return np.convolve(x_all, weights, "same") / total
 
 
-def wma_linear_convolve_extracted(x_all, **kwargs):
-    """ A wrapper for sma_convolve() as Numba doesn't support the **kwargs construct. Ignore irrelevant arguments.
-    """
+def wma_linear_convolve_extracted(x_all: NDArray[(Any,), np.int32], **kwargs) -> Iterator[int]:
+    """An 'extracted' wrapper for wma_linear_convolve()."""
     relevant_kwargs = {}
     if "window_width" in kwargs:
         relevant_kwargs["window_width"] = kwargs["window_width"]
@@ -118,18 +140,22 @@ def wma_linear_convolve_extracted(x_all, **kwargs):
         yield y
 
 
-def ema_convolve(x_all, window_width=500, alpha=0.05):
-    """Exponentially weighted moving average filter
-    `n` is window size in samples, formula is e ** (alpha * x)
+def ema_convolve(x_all: NDArray[(Any,), np.int32], window_width: int = 500, alpha: float = 0.05) -> NDArray[
+    (Any,), np.int32]:
+    """Exponentially weighted moving average filter. Formula is e ** (alpha * x).
+
+    :param x_all: The input signal.
+    :param window_width: The window size in samples. 
+    :param alpha: As in formula.
+    :return: Filtered result.
     """
     weights = np.exp(np.arange(0, alpha * window_width, alpha))
     total = np.sum(weights)
     return np.convolve(x_all, weights, "same") / total
 
 
-def ema_convolve_extracted(x_all, **kwargs):
-    """ A wrapper for sma_convolve() as Numba doesn't support the **kwargs construct. Ignore irrelevant arguments.
-    """
+def ema_convolve_extracted(x_all: NDArray[(Any,), np.int32], **kwargs) -> Iterator[int]:
+    """An 'extracted' wrapper for ema_convolve()."""
     relevant_kwargs = {}
     if "window_width" in kwargs:
         relevant_kwargs["window_width"] = kwargs["window_width"]
@@ -140,7 +166,7 @@ def ema_convolve_extracted(x_all, **kwargs):
         yield y
 
 
-def ema_wrapper(window_width=500, alpha=0.05):
+def ema_wrapper(window_width: int = 500, alpha: float = 0.05) -> Callable:
     """Return an instance of ema_convolve() with n and alpha preset."""
 
     def inner(x_all):
@@ -150,12 +176,12 @@ def ema_wrapper(window_width=500, alpha=0.05):
 
 
 @jit(nopython=True)
-def cfd(x_all, inv_frac=3, delay_samples=100):
+def cfd(x_all: NDArray[(Any,), np.int32], inv_frac: int = 3, delay_samples: int = 100) -> Iterator[int]:
     """Simulation of the constant fraction discriminator (CFD) described in Verilog.
     As normally described, the parameters are `fraction` and `delay`.
     The parameter `inv_frac` is `1/fraction`, so can multiply the conjugate variable
         rather than divide (which is easier to synthesise).
-    The parameter `delay_samples` is `delay * sample_rate`.
+    Note the parameter `delay_samples = delay * sample_rate`.
     """
     buffer = np.zeros(delay_samples)  # In effect delays the input
 
@@ -173,20 +199,15 @@ def cfd(x_all, inv_frac=3, delay_samples=100):
 
 
 @jit(nopython=True)
-def cfd_normalised(x_all, inv_frac=3, delay_samples=100):
-    # Make smaller ('normalise') to fit on graph for InteractiveTrigger
+def cfd_normalised(x_all: NDArray[(Any,), np.int32], inv_frac: int = 3, delay_samples: int = 100) -> Iterator[int]:
+    """Make cfd() output smaller ('normalised') to fit on graph for InteractiveTrigger."""
     for y in cfd(x_all, inv_frac, delay_samples):
         yield int(y / inv_frac)  # Need to cast to int so that bit-shift (requires int) in lp_filter_iir() works
 
 
 @jit(nopython=True)
-def cfd2(x_all, inv_frac=3, delay_samples=100):
-    """Simulation of the constant fraction discriminator (CFD) described in Verilog (version 2).
-    As normally described, the parameters are `fraction` and `delay`.
-    The parameter `inv_frac` is `1/fraction`, so can multiply the conjugate variable
-        rather than divide (which is easier to synthesise).
-    The parameter `delay_samples` is `delay * sample_rate`.
-    """
+def cfd2(x_all: NDArray[(Any,), np.int32], inv_frac: int = 3, delay_samples: int = 100) -> Iterator[int]:
+    """Alternate version (2) of cfd(), are essentially equivalent."""
     buffer = np.zeros(delay_samples)  # In effect delays the input
 
     for x in x_all:  # Simulate `always @ (posedge clk)`
@@ -203,13 +224,8 @@ def cfd2(x_all, inv_frac=3, delay_samples=100):
 
 
 @jit(nopython=True)
-def cfd3(x_all, inv_frac=3, delay_samples=100):
-    """Simulation of the constant fraction discriminator (CFD) described in Verilog (version 3).
-    As normally described, the parameters are `fraction` and `delay`.
-    The parameter `inv_frac` is `1/fraction`, so can multiply the conjugate variable
-        rather than divide (which is easier to synthesise).
-    The parameter `delay_samples` is `delay * sample_rate`.
-    """
+def cfd3(x_all: NDArray[(Any,), np.int32], inv_frac: int = 3, delay_samples: int = 100) -> Iterator[int]:
+    """Alternate version (3) of cfd(), are essentially equivalent."""
     buffer = np.zeros(delay_samples)  # In effect delays the input
 
     for x in x_all:  # Simulate `always @ (posedge clk)`
@@ -225,13 +241,23 @@ def cfd3(x_all, inv_frac=3, delay_samples=100):
         yield y
 
 
-def diff(x_all):
+def diff(x_all: NDArray[(Any,), np.int32]) -> NDArray[(Any,), np.int32]:
+    """A discriminator using the difference between neighbouring values. Essentially useless."""
     return np.pad(np.diff(x_all), (0, 1)) * 10
 
+
 # @jit(nopython=True)
-def mad_discriminator(x_all, window_width=WINDOW_WIDTH, madt=2, *args, **kwargs):
-    """ Not Verilog-ready
-    madt is mean absolute dev threshold
+def mad_discriminator(x_all: NDArray[(Any,), np.int32], window_width: int = WINDOW_WIDTH, madt: float = 2.0, *args,
+                      **kwargs) -> Iterator[int]:
+    """A discriminator which triggers when the signal exceeds a preset Mean Average Deviation from the (simple
+    moving) mean. Can probably program in Verilog. madt is
+
+    :param x_all: The input signal.
+    :param window_width: The window size in samples.
+    :param madt: The Mean Absolute Deviation threshold.
+    :param args: <>
+    :param kwargs: <>
+    :return: <>
     """
     n = window_width
 
@@ -251,17 +277,15 @@ def mad_discriminator(x_all, window_width=WINDOW_WIDTH, madt=2, *args, **kwargs)
             deviation_buffer[i + 1] = deviation_buffer[i]
         deviation_buffer[0] = np.abs(x - mean) / n
 
-        mad = np.sum(deviation_buffer)
-
-        ## Avoid np.sum with maths!
-
-        # yield mean, mad
+        mad = np.sum(deviation_buffer)  # Possible to do without np.sum() in future version
 
         # Convert two thresholds either side or mean into one using abs()
+        # yield np.abs(mean) - mad * madt, mad
         yield np.abs(mean) - mad * madt
 
+
 @jit(nopython=True, parallel=True)
-def zero_detector(x_all):
+def zero_detector(x_all: NDArray[(Any,), np.int32]) -> Iterator[int]:
     sign = 0
     for x in x_all:  # Simulate `always @ (posedge clk)`
         # Two's complement: MSB is 0 for non-negatives (including 0), and 1 for negatives
@@ -273,10 +297,10 @@ def zero_detector(x_all):
 
 
 @jit(nopython=True)
-def zero_detector2(x_all):
+def zero_detector2(x_all: NDArray[(Any,), np.int32]) -> Iterator[int]:
     """A variation of `zero_detector()` that only detects rising edges of zero crossings.
-    NB: using two's complement, so MSB is 0 for non-negatives (including 0), and 1 for negatives
-    Cannot parallelise
+    Note we use two's complement, so MSB is 0 for non-negatives (including 0), and 1 for negatives.
+    Cannot parallelise.
     """
     sign = 0
     for x in x_all:  # Simulate `always @ (posedge clk)`
@@ -291,10 +315,11 @@ def zero_detector2(x_all):
 
 
 @jit(nopython=True)  # Numba can't parallelise
-def compare_data_to_success_condition(iterate_through, search_for, tolerance_samples):
-    """Loop through iterate_through to count values against the success condition search_for
-    within tolerance_samples. Note for counting misfires this returns the complement.
-    If tolerance_samples passed as none, search whole slice (maximum tolerance).
+def compare_data_to_success_condition(iterate_through: NDArray[(Any,), bool], search_for: NDArray[(Any,), bool],
+                                      tolerance_samples: int) -> tuple[int, int]:
+    """Loop through `iterate_through` to count values against the success condition `search_for`
+    within `tolerance_samples`. Note for counting misfires this returns the complement.
+    If `tolerance_samples` passed as `None`, search whole slice (maximum tolerance).
     """
     length = len(iterate_through)
     if tolerance_samples is None:
@@ -319,8 +344,9 @@ def compare_data_to_success_condition(iterate_through, search_for, tolerance_sam
 
 
 @jit(nopython=True)  # Numba can't parallelise
-def get_sensitivity_specificity_compiled_v1(trigger_output, truth_data, section_time, sampling_period,
-                                            tolerance=TOLERANCE):
+def get_sensitivity_specificity_compiled_v1(trigger_output: NDArray[(Any,), bool], truth_data: NDArray[(Any,), bool],
+                                            section_time: float, sampling_period: float,
+                                            tolerance: float = TOLERANCE) -> tuple[float, float]:
     section_samples = int(section_time / sampling_period)
     tolerance_samples = int(tolerance / sampling_period)
 
