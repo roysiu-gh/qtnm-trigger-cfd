@@ -5,33 +5,54 @@ from default_constants import *
 
 
 class SignalData(object):
+    """A class containing a given output signal (and time series) from the Matched Filter, the truth data to compare the
+    trigger against, and the methods to do so."""
     def __init__(self,
-                 time,
-                 signal,
-                 truth_data=None,
+                 time: NDArray[(Any,), np.int32],
+                 signal: NDArray[(Any,), np.int32],
+                 truth_data: NDArray[(Any,), bool] | None = None,
 
                  # filter_alg=lp_filter_iir,
-                 filter=lp_filter_iir_extracted,
-                 discriminator=cfd,
-                 zero_detector_alg=zero_detector2,
-                 run_second_filter=False,
-                 run_discriminator_twice=False,
+                 filter: Callable = lp_filter_iir_extracted,
+                 discriminator: Callable = cfd,
+                 zero_detector_alg: Callable = zero_detector2,
+                 run_second_filter: bool = False,
+                 run_discriminator_twice: bool = False,
 
-                 slice_start=0,
-                 slice_end=None,  # None sends the slice to the end
-                 amp_power=16,
-                 filter_args={
+                 slice_start: int = 0,
+                 slice_end: int | None = None,  # None sends the slice to the end
+                 amp_power: int = 16,
+                 filter_args: dict = {
                      "decay_part": DECAY_PART,
                      "window_width": WINDOW_WIDTH,
                      "alpha": ALPHA,
                  },
-                 # decay_part=DECAY_PART,
-                 delay_samples=DELAY_SAMPLES,
-                 inv_frac=INV_FRAC,
+                 delay_samples: int = DELAY_SAMPLES,
+                 inv_frac: int = INV_FRAC,
 
-                 tolerance=TOLERANCE,
-                 section_time=SECTION_TIME,
+                 tolerance: float = TOLERANCE,
+                 section_time: float = SECTION_TIME,
                  ):
+        """
+
+        :param time: The time series.
+        :param signal: The signal series output from the Matched Filter.
+        :param truth_data: The truth data to test the trigger against.
+        :param filter: The filter to use.
+        :param discriminator: The discriminator (default CFD) to use.
+        :param zero_detector_alg: The zero detector to use.
+        :param run_second_filter: Whether to run filter the output of the (first) discriminator.
+        :param run_discriminator_twice: Whether to run the discriminator again on the (filtered) output of the first
+            discriminator.
+        :param slice_start: Use if only analysing a specific part of the data.
+        :param slice_end: Use if only analysing a specific part of the data.
+        :param amp_power: The power of 2 by which the signal should be amplified before processing.
+        :param filter_args: General argument dict for whatever filter alg is passed.
+        :param delay_samples: See cfd().
+        :param inv_frac: See cfd().
+        :param tolerance: The (time) tolerance for counting a successful trigger within a section.
+        :param section_time: The size of a section (given data is split into sections to analyse separately).
+        """
         self.output = None
         self.sig_fil3 = None
         self.sig_cfd2 = None
@@ -79,10 +100,10 @@ class SignalData(object):
 
         self.regenerate()
 
-    def __len__(self):
+    def __len__(self) -> int:
         return self.slice_end - self.slice_start
 
-    def regenerate(self):
+    def regenerate(self) -> None:
         self.slice()
         self.run_amp()
         self.run_fil1()
@@ -95,41 +116,52 @@ class SignalData(object):
         self.run_zd()
 
     def slice(self):
-        """Note that this affects computation as the preceding calculations aren't taken into account."""
+        """Slice the relevant data to analyse only a part of it.
+        Note that this may affect computation as the preceding calculations aren't taken into account depending on the
+        algorithms used.
+        """
         self.t = self.all_t[self.slice_start:self.slice_end]
         self.sig = self.all_sig[self.slice_start:self.slice_end]
         self.truth_data = self.all_truth_data[self.slice_start:self.slice_end]
 
     def run_amp(self):
+        """Amplify the signal so that computation can be integer-only (faster than float arithmetic)."""
         self.sig_amp = (self.sig * (2 ** self.amp_power)).astype(int)
         return self.sig_amp
 
     def run_fil1(self):
+        """Filter the amplified signal."""
         filtered = self.filter(self.sig_amp, **self.filter_args)
         self.sig_fil1 = np.array(list(filtered))
         return self.sig_fil1
 
     def run_cfd1(self):
+        """Run the discriminator on the (amplified and filtered) signal."""
         cfd_done = self.cfd(self.sig_fil1, inv_frac=self.inv_frac, delay_samples=self.delay_samples, )
         self.sig_cfd1 = np.array(list(cfd_done))
         return self.sig_cfd1
 
     def run_fil2(self):
+        """Filter the output of the discriminator."""
         filtered = self.filter(self.sig_cfd1, **self.filter_args)
         self.sig_fil2 = np.array(list(filtered))
         return self.sig_fil2
 
     def run_cfd2(self):
+        """Run the discriminator a second time."""
         cfd_done = self.cfd(self.sig_fil2, inv_frac=self.inv_frac, delay_samples=self.delay_samples, )
         self.sig_cfd2 = np.array(list(cfd_done))
         return self.sig_cfd2
 
     def run_fil3(self):
+        """Filter the output of the second discriminator."""
         filtered = self.filter(self.sig_cfd2, **self.filter_args)
         self.sig_fil3 = np.array(list(filtered))
         return self.sig_fil3
 
     def run_zd(self):
+        """Find zero-crossings on whatever the is final output (determined by) `run_discriminator_twice` and
+        `run_second_filter`."""
         if self.run_discriminator_twice:
             zd_done = self.zd(self.sig_fil3)
         elif self.run_second_filter:
@@ -143,11 +175,17 @@ class SignalData(object):
         self.truth_data = truth_data
         self.slice()
 
-    def get_current_performance(self, tolerance=None, output_to_analyse=None, verbose=False):
-        """
-        If output_to_analyse is None, use self.output. This is so that get_performance_parallel() can
+    def get_current_performance(self, tolerance: float = None, output_to_analyse=None, verbose: bool = False) -> dict:
+        """Calculate various stats on the output against the truth data.
+        If `output_to_analyse` is None, use `self.output`. This is so that `get_performance_parallel()` can
         run without changing instance variables and affecting other processes.
-        --- make this a class method?
+
+        Todo: make this a class method?
+
+        :param tolerance: The (time) tolerance for counting a successful trigger.
+        :param output_to_analyse: Analyse an output that isn't the current output.
+        :param verbose: Print the calculated data.
+        :return:
         """
         self.tolerance = tolerance or self.tolerance
         if output_to_analyse is None:
@@ -202,7 +240,16 @@ class SignalData(object):
 
     # @njit
     def get_performance(self, inv_frac_vals, delay_samples_vals, tolerance=None, verbose=False):
+        """Run `get_current_performance()` on various values for `inv_frac` and `delay_samples`.
+
+        :param inv_frac_vals: List of values of `inv_frac` to test.
+        :param delay_samples_vals: List of values of `delay_samples` to test.
+        :param tolerance: The (time) tolerance for counting a successful trigger.
+        :param verbose: Print a loading bar, wall time and CPU time.
+        :return:
+        """
         self.tolerance = tolerance or self.tolerance
+        start_wall, start_cpu, end_wall, end_cpu = 0, 0, 0, 0
         if verbose:
             start_wall = time.time()
             start_cpu = time.process_time()
@@ -235,7 +282,16 @@ class SignalData(object):
                                                        tolerance=self.tolerance, )
 
     def get_roc_curve_data(self, inv_frac_vals, delay_samples_vals, tolerance=None, verbose=False):
+        """Get sensitivities and specificities for various values of `inv_frac` and `delay_samples`.
+
+        :param inv_frac_vals: List of values of `inv_frac` to test.
+        :param delay_samples_vals: List of values of `delay_samples` to test.
+        :param tolerance: The (time) tolerance for counting a successful trigger.
+        :param verbose: Print a loading bar, wall time and CPU time.
+        :return:
+        """
         self.tolerance = tolerance or self.tolerance
+        start_wall, start_cpu, end_wall, end_cpu = 0, 0, 0, 0
         all_performances = []
         if verbose:
             print("Tolerance [s]:", self.tolerance)
@@ -264,14 +320,29 @@ class SignalData(object):
 
         return all_performances
 
-    def get_roc_curve_data2(self, filter_arg_range, inv_frac_range, delay_samples_range,
-                            filter=lp_filter_iir_extracted, filter_arg_name="decay_part",
-                            tolerance=None, verbose=False):
-        """ Generate ROC curve data for varied values for the first filter arg, inv_frac, delay_samples.
-        For the values, takes tuple (min, max, step).
+    def get_roc_curve_data2(self,
+                            filter_arg_range: tuple[float, float, float],
+                            inv_frac_range: tuple[float, float, float],
+                            delay_samples_range: tuple[float, float, float],
+                            filter=lp_filter_iir_extracted,
+                            filter_arg_name: str = "decay_part",
+                            tolerance: float = None,
+                            verbose: bool = False):
+        """Generate ROC curve data for varied values for: the first filter arg, inv_frac, `delay_samples`.
+        For the values, takes tuple (min, max, step) unpacked into `np.arange()`.
+
+        :param filter_arg_range: The range of the (first) filter arg as a tuple (min, max, step).
+        :param inv_frac_range: The range of `inv_frac` as a tuple (min, max, step).
+        :param delay_samples_range: The range of `delay_samples` as a tuple (min, max, step).
+        :param filter: The filter to use.
+        :param filter_arg_name: The argument name of the filter passed (not the optimal way to program this I know).
+        :param tolerance: The (time) tolerance for counting a successful trigger.
+        :param verbose: Print a loading bar, wall time and CPU time.
+        :return:
         """
         self.tolerance = tolerance or self.tolerance
         self.filter = filter
+        start_wall, start_cpu, end_wall, end_cpu = 0, 0, 0, 0
 
         filter_arg_vals = np.arange(*filter_arg_range)
         inv_frac_vals = np.arange(*inv_frac_range)

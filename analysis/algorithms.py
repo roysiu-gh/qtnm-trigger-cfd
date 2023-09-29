@@ -26,7 +26,7 @@ TIME_DURATION_UNITS = (
 )
 
 
-def human_time(seconds: int) -> str:
+def human_time(seconds: float) -> str:
     """Convert seconds to a human-readable time duration."""
     seconds = int(seconds)
     if seconds == 0:
@@ -98,7 +98,7 @@ def lp_filter_iir_wrapper(decay_full_power: int = 10, decay_part: int = 900) -> 
     return inner
 
 
-def sma_convolve(x_all: NDArray[(Any,), np.int32], window_width: int = 100) -> NDArray[(Any,), np.int32]:
+def sma_convolve(x_all: NDArray[(Any,), np.int32], window_width: int = 100) -> NDArray[(Any,), float]:
     """Simple moving average filter using convolution, NOT Verilog implementation.
 
     :param x_all: The input signal. 
@@ -118,7 +118,7 @@ def sma_convolve_extracted(x_all: NDArray[(Any,), np.int32], **kwargs) -> Iterat
         yield y
 
 
-def wma_linear_convolve(x_all: NDArray[(Any,), np.int32], window_width: int = 100) -> NDArray[(Any,), np.int32]:
+def wma_linear_convolve(x_all: NDArray[(Any,), np.int32], window_width: int = 100) -> NDArray[(Any,), float]:
     """(Linearly) weighted moving average filter.
 
     :param x_all: The input signal.
@@ -141,7 +141,7 @@ def wma_linear_convolve_extracted(x_all: NDArray[(Any,), np.int32], **kwargs) ->
 
 
 def ema_convolve(x_all: NDArray[(Any,), np.int32], window_width: int = 500, alpha: float = 0.05) -> NDArray[
-    (Any,), np.int32]:
+        (Any,), np.int32]:
     """Exponentially weighted moving average filter. Formula is e ** (alpha * x).
 
     :param x_all: The input signal.
@@ -241,22 +241,20 @@ def cfd3(x_all: NDArray[(Any,), np.int32], inv_frac: int = 3, delay_samples: int
         yield y
 
 
-def diff(x_all: NDArray[(Any,), np.int32]) -> NDArray[(Any,), np.int32]:
+def diff(x_all: NDArray[(Any,), np.int32]) -> NDArray[(Any,), int]:
     """A discriminator using the difference between neighbouring values. Essentially useless."""
     return np.pad(np.diff(x_all), (0, 1)) * 10
 
 
 # @jit(nopython=True)
-def mad_discriminator(x_all: NDArray[(Any,), np.int32], window_width: int = WINDOW_WIDTH, madt: float = 2.0, *args,
-                      **kwargs) -> Iterator[int]:
+def mad_discriminator(x_all: NDArray[(Any,), np.int32], window_width: int = WINDOW_WIDTH, madt: float = 2.0) -> \
+        Iterator[int]:
     """A discriminator which triggers when the signal exceeds a preset Mean Average Deviation from the (simple
     moving) mean. Can probably program in Verilog. madt is
 
     :param x_all: The input signal.
     :param window_width: The window size in samples.
     :param madt: The Mean Absolute Deviation threshold.
-    :param args: <>
-    :param kwargs: <>
     :return: <>
     """
     n = window_width
