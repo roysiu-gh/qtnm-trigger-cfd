@@ -53,14 +53,17 @@ def no_filter(x_all: IntArray, *args, **kwargs) -> Iterator[int]:
 
 @jit(nopython=True)
 def lp_filter_iir(x_all: IntArray, decay_full_power: int = 10, decay_part: int = 900) -> Iterator[int]:
-    """Low-pass IIR filter simulation of Verilog implementation.
-    Written as a generator to simulate verilog functionality.
+    """Low-pass single-pole IIR filter simulation of Verilog implementation. Written as a generator to simulate
+    verilog functionality. This follows the usual algorithm, to avoid use of floating points, the normal parameter
+    `decay` is split into a numerator and denominator so `decay = decay_part / decay_full'. Instead of multiplying by `decay`, the signal is multiplied by
+    the numerator then divided by the denominator. The denominator must be a power of 2 so that we can use an
+    arithmetic shift for fast division without use of floating points.
     Default `decay_full_power = 10` so that `decay_full = 2 ** decay_full_power = 1024`.
     Cannot parallelise.
 
     :param x_all: The input signal. 
-    :param decay_full_power: <>
-    :param decay_part: <>
+    :param decay_full_power: The power (of 2) of the denominator of `decay`.
+    :param decay_part: The numerator of `decay`.
     :return: Filtered result.
     """
     a = (2 ** decay_full_power) - decay_part
@@ -250,7 +253,7 @@ def mad_discriminator(x_all: IntArray,
                       madt: float = 2.0,
                       *args, **kwargs) -> Iterator[int]:
     """A discriminator which triggers when the signal exceeds a preset Mean Average Deviation from the (simple
-    moving) mean. Can probably program in Verilog. madt is
+    moving) mean. Can probably program in Verilog.
 
     :param x_all: The input signal.
     :param window_width: The window size in samples.
@@ -286,6 +289,12 @@ def mad_discriminator(x_all: IntArray,
 
 @jit(nopython=True, parallel=True)
 def zero_detector(x_all: IntArray) -> Iterator[int]:
+    """Finds positions where the signal is either rising or falling through zero using XOR on the most significant bit.
+    Note we use two's complement, so MSB is 0 for non-negatives (including 0), and 1 for negatives.
+
+    :param x_all: The input signal.
+    :return: The zero positions.
+    """
     sign = 0
     for x in x_all:  # Simulate `always @ (posedge clk)`
         # Two's complement: MSB is 0 for non-negatives (including 0), and 1 for negatives
@@ -298,9 +307,11 @@ def zero_detector(x_all: IntArray) -> Iterator[int]:
 
 @jit(nopython=True)
 def zero_detector2(x_all: IntArray) -> Iterator[int]:
-    """A variation of `zero_detector()` that only detects rising edges of zero crossings.
+    """A variation of `zero_detector()` that only detects rising zero crossings.
     Note we use two's complement, so MSB is 0 for non-negatives (including 0), and 1 for negatives.
-    Cannot parallelise.
+
+    :param x_all: The input signal.
+    :return: The zero positions.
     """
     sign = 0
     for x in x_all:  # Simulate `always @ (posedge clk)`
