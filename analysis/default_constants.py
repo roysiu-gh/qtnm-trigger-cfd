@@ -1,3 +1,10 @@
+from nptyping import NDArray, Shape, Bool, Int, Float
+
+# Type aliases
+BoolArray = NDArray[Shape["1"], Bool]
+IntArray = NDArray[Shape["1"], Int]
+FloatArray = NDArray[Shape["1"], Float]
+
 # Filter params
 DECAY_PART = 900
 WINDOW_WIDTH = 100

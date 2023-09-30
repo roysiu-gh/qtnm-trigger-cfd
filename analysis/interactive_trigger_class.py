@@ -1,10 +1,6 @@
-from typing import Any
-
 import matplotlib.pyplot as plt
-import numpy as np
 from IPython.display import display
 from ipywidgets import interactive, Layout, IntSlider, FloatRangeSlider, FloatSlider, Label
-from nptyping import NDArray
 
 from default_constants import *
 from signal_data_class import SignalData
@@ -15,8 +11,8 @@ class InteractiveTrigger(SignalData):
     and its processing in a JupyterLab notebook."""
 
     def __init__(self,
-                 time: NDArray[(Any,), np.int32],
-                 signal: NDArray[(Any,), np.int32],
+                 time: IntArray,
+                 signal: IntArray,
                  title: str = "untitled",
                  yscale: str = "linear",
                  delay_samples: int = DELAY_SAMPLES,

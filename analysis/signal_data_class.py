@@ -8,9 +8,9 @@ class SignalData(object):
     """A class containing a given output signal (and time series) from the Matched Filter, the truth data to compare the
     trigger against, and the methods to do so."""
     def __init__(self,
-                 time: NDArray[(Any,), np.int32],
-                 signal: NDArray[(Any,), np.int32],
-                 truth_data: NDArray[(Any,), bool] | None = None,
+                 time: IntArray,
+                 signal: IntArray,
+                 truth_data: BoolArray | None = None,
 
                  # filter_alg=lp_filter_iir,
                  filter: Callable = lp_filter_iir_extracted,
@@ -97,6 +97,7 @@ class SignalData(object):
         self.tolerance = tolerance
         self.section_time = section_time
         self.sampling_period = self.all_t[1] - self.all_t[0]  # Assumes constant sample time-spacing
+        print(1132142352453434, type(self.sampling_period))
 
         self.regenerate()
 
