@@ -17,6 +17,7 @@ class InteractiveTrigger(SignalData):
                  yscale: str = "linear",
                  delay_samples: int = DELAY_SAMPLES,
                  inv_frac: int = INV_FRAC,
+                 show_legend: bool = True,
                  *args,
                  **kwargs,
                  ):
@@ -57,6 +58,7 @@ class InteractiveTrigger(SignalData):
         view_range_min = self.all_t[self.slice_start]
         view_range_max = self.all_t[self.slice_end]  # NB [-1] indexing does not work with pandas dataframe
         self.view_range = [view_range_min, view_range_max]
+        self.show_legend = show_legend
 
     def get_nonzeros(self, series):
         """Return datapoints where 'y'-val is non-zero."""
@@ -118,7 +120,8 @@ class InteractiveTrigger(SignalData):
                                           fmt="|", capsize=25, markeredgewidth=2,
                                           label="Truth data", color="yellow", zorder=4)
 
-        plt.legend(loc="upper right")
+        if self.show_legend:
+            plt.legend(loc="upper right")
 
     def show(self):
         """Create and show the interactive plot."""
@@ -127,6 +130,8 @@ class InteractiveTrigger(SignalData):
         self.fig.suptitle(self.title)
 
         # Plot
+        self.axis.set_xlabel("Time [s]")
+        self.axis.set_ylabel("Stored value in FPGA")
         self.axis.set_xlim(self.view_range)
         self.axis.set_yscale(self.yscale)
         self.axis.plot(self.t, self.sig_amp, label="Amplifier output")

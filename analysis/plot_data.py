@@ -45,7 +45,8 @@ def plot_inv_frac(df: pd.DataFrame, delay_samples: int = DELAY_SAMPLES, title: s
     ax2.set_ylim([0, 1.05])
     ax2.plot(df.inv_frac, df.hitrate, label="Hitrate", color="tab:green", linestyle="dotted")
     ax2.plot(df.inv_frac, df.misfire_rate, label="Misfire Rate", color="tab:red", linestyle="dotted")
-    ax2.legend()
+    if show_legend:
+        ax2.legend()
 
     fig.tight_layout()  # Otherwise the right y-label is slightly clipped (for axis1)
     plt.show()
@@ -114,7 +115,7 @@ def plot_misfires(df: pd.DataFrame, title: str = "untitled"):
     return fig
 
 
-def plot_roc_curve(df: pd.DataFrame, title: str = "untitled"):
+def plot_roc_curve(df: pd.DataFrame, title: str = "untitled", show_legend: bool = True):
     """Plot a Receiver Operating Characteristic (ROC) curve. Plot a curve for different values of `delay_samples`.
     Vary `inv_frac` for each curve.
 
@@ -139,13 +140,14 @@ def plot_roc_curve(df: pd.DataFrame, title: str = "untitled"):
         # axis.plot(ds_TNRs, ds_TPRs, label=f"delay_samples: {delay_samples}")
         axis.plot(fallouts, sensitivities, label=f"Delay Samples: {delay_samples}")
 
-    plt.legend()
+    if show_legend:
+        plt.legend()
     plt.show()
 
     return fig
 
 
-def plot_roc_curves_iir(df: pd.DataFrame, title: str = "untitled"):
+def plot_roc_curves_iir(df: pd.DataFrame, title: str = "untitled", show_legend: bool = True):
     """Same as plot_roc_curve(), but includes a slider for different `decay_part` values.
     Use only for data collected from using `lp_filter_iir()`.
 
@@ -182,14 +184,15 @@ def plot_roc_curves_iir(df: pd.DataFrame, title: str = "untitled"):
             specificities = filtered_df.specificity
             fallouts = 1 - specificities
             axis.plot(fallouts, sensitivities, label=f"Delay Samples: {delay_samples}")
-        axis.legend()
+        if show_legend:
+            axis.legend()
 
     interact(update, decay_part=decay_part_slider)
 
     return fig
 
 
-def plot_roc_curves_sma(df: pd.DataFrame, title: str = "untitled"):
+def plot_roc_curves_sma(df: pd.DataFrame, title: str = "untitled", show_legend: bool = True):
     """Same as plot_roc_curve(), but includes a slider for different `window_width` values.
     Use only for data collected from using `sma_convolve()`.
 
@@ -226,7 +229,8 @@ def plot_roc_curves_sma(df: pd.DataFrame, title: str = "untitled"):
             specificities = filtered_df.specificity
             fallouts = 1 - specificities
             axis.plot(fallouts, sensitivities, label=f"Delay Samples: {delay_samples}")
-        axis.legend()
+        if show_legend:
+            axis.legend()
 
     interact(update, window_width=window_width_slider)
 
